@@ -1,0 +1,73 @@
+<?php
+
+use App\Http\Controllers\Authenticated\AdminController;
+use App\Http\Controllers\Authenticated\DashboardController;
+use App\Http\Controllers\Guest\AuthController;
+use App\Http\Controllers\PjKabupaten\KabupatenLuasTanamController;
+use App\Http\Controllers\PjKabupaten\KabupatenPompaDimanfaatkanController;
+use App\Http\Controllers\PjKabupaten\KabupatenPompaDiterimaController;
+use App\Http\Controllers\PjKabupaten\KabupatenPompaUsulanController;
+use App\Http\Controllers\PjKecamatan\KecamatanLuasTanamController;
+use App\Http\Controllers\PjKecamatan\KecamatanPompaDimanfaatkanController;
+use App\Http\Controllers\PjKecamatan\KecamatanPompaDiterimaController;
+use App\Http\Controllers\PjKecamatan\KecamatanPompaUsulanController;
+use App\Http\Controllers\PjKecamatan\PoktanController;
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider and all of them will
+| be assigned to the "web" middleware group. Make something great!
+|
+*/
+
+Route::get('/', function () { return redirect()->route('auth.login.view'); });
+
+Route::prefix('/auth')->group(function () {
+    Route::middleware('guest')->group(function () {
+        Route::get('/login', [AuthController::class, 'loginView'])->name('auth.login.view');
+        Route::post('/login', [AuthController::class, 'login'])->name('auth.login');
+    });
+    Route::get('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('auth.logout');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::middleware('nonactive')->group(function () {
+        Route::get('/aktifasi', [DashboardController::class, 'activation'])->name('activation');
+        Route::post('/aktifasi', [DashboardController::class, 'activate'])->name('activate');
+    });
+    
+    Route::middleware('active')->group(function () {
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        
+        Route::middleware('access:admin')->group(function () {
+            Route::get('/daftar-pj', [AdminController::class, 'userList'])->name('admin.daftar_pj');
+            Route::post('/tambah-pj', [AdminController::class, 'createUser'])->name('admin.tambah_pj');
+            Route::put('/edit-pj/{id}', [AdminController::class, 'editUser'])->name('admin.edit_pj');
+            Route::delete('/hapus-pj/{id}', [AdminController::class, 'deleteUser'])->name('admin.hapus_pj');
+        });
+        
+        Route::middleware('access:pj_kecamatan')->group(function () {
+            Route::post('/input/poktan/store', [PoktanController::class, 'store'])->name('kecamatan.poktan.store');
+            Route::get('/input/usulan', [KecamatanPompaUsulanController::class, 'index'])->name('kecamatan.usulan');
+            Route::get('/input/usulan/create', [KecamatanPompaUsulanController::class, 'create'])->name('kecamatan.usulan.create');
+            Route::post('/input/usulan/store', [KecamatanPompaUsulanController::class, 'store'])->name('kecamatan.usulan.store');
+            Route::put('/input/usulan/{id}/update', [KecamatanPompaUsulanController::class, 'update'])->name('kecamatan.usulan.update');
+            Route::delete('/input/usulan/{id}/destroy', [KecamatanPompaUsulanController::class, 'destroy'])->name('kecamatan.usulan.destroy');
+            Route::get('/input/diterima', [KecamatanPompaDiterimaController::class, 'index'])->name('kecamatan.diterima');
+            Route::get('/input/dimanfaatkan', [KecamatanPompaDimanfaatkanController::class, 'index'])->name('kecamatan.dimanfaatkan');
+            Route::get('/input/luas-tanam', [KecamatanLuasTanamController::class, 'index'])->name('kecamatan.luas_tanam');
+        });
+        
+        Route::middleware('access:pj_kabupaten')->group(function () {
+            Route::get('/verifikasi/usulan', [KabupatenPompaUsulanController::class, 'index'])->name('kabupaten.usulan');
+            Route::get('/verifikasi/diterima', [KabupatenPompaDiterimaController::class, 'index'])->name('kabupaten.diterima');
+            Route::get('/verifikasi/dimanfaatkan', [KabupatenPompaDimanfaatkanController::class, 'index'])->name('kabupaten.dimanfaatkan');
+            Route::get('/verifikasi/luas-tanam', [KabupatenLuasTanamController::class, 'index'])->name('kabupaten.luas_tanam');
+        });
+    });
+});
