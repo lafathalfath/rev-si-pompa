@@ -17,7 +17,6 @@ return new class extends Migration
             $table->unsignedBigInteger('pj_id')->nullable();
             $table->unsignedBigInteger('kecamatan_id');
             $table->boolean('is_deleted')->default(false);
-            $table->timestamps();
 
             $table->foreign('pj_id')->references('id')->on('users');
             $table->foreign('kecamatan_id')->references('id')->on('kecamatan');

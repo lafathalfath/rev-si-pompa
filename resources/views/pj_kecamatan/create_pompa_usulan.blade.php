@@ -1,4 +1,5 @@
 @extends('layouts.authenticated')
+@section('title')| Tambah Pompa Usulan @endsection
 @section('content')
 <style>
 </style>    

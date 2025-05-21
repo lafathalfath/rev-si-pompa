@@ -59,14 +59,31 @@ Route::middleware('auth')->group(function () {
             Route::put('/input/usulan/{id}/update', [KecamatanPompaUsulanController::class, 'update'])->name('kecamatan.usulan.update');
             Route::delete('/input/usulan/{id}/destroy', [KecamatanPompaUsulanController::class, 'destroy'])->name('kecamatan.usulan.destroy');
             Route::get('/input/diterima', [KecamatanPompaDiterimaController::class, 'index'])->name('kecamatan.diterima');
+            Route::get('/input/diterima/create', [KecamatanPompaDiterimaController::class, 'create'])->name('kecamatan.diterima.create');
+            Route::post('/input/diterima/store', [KecamatanPompaDiterimaController::class, 'store'])->name('kecamatan.diterima.store');
+            Route::put('/input/diterima/{id}/update', [KecamatanPompaDiterimaController::class, 'update'])->name('kecamatan.diterima.update');
+            Route::delete('/input/diterima/{id}/destroy', [KecamatanPompaDiterimaController::class, 'destroy'])->name('kecamatan.diterima.destroy');
             Route::get('/input/dimanfaatkan', [KecamatanPompaDimanfaatkanController::class, 'index'])->name('kecamatan.dimanfaatkan');
+            Route::get('/input/dimanfaatkan/create', [KecamatanPompaDimanfaatkanController::class, 'create'])->name('kecamatan.dimanfaatkan.create');
+            Route::post('/input/dimanfaatkan/store', [KecamatanPompaDimanfaatkanController::class, 'store'])->name('kecamatan.dimanfaatkan.store');
+            Route::put('/input/dimanfaatkan/{id}/update', [KecamatanPompaDimanfaatkanController::class, 'update'])->name('kecamatan.dimanfaatkan.update');
+            Route::delete('/input/dimanfaatkan/{id}/destroy', [KecamatanPompaDimanfaatkanController::class, 'destroy'])->name('kecamatan.dimanfaatkan.destroy');
             Route::get('/input/luas-tanam', [KecamatanLuasTanamController::class, 'index'])->name('kecamatan.luas_tanam');
         });
         
         Route::middleware('access:pj_kabupaten')->group(function () {
             Route::get('/verifikasi/usulan', [KabupatenPompaUsulanController::class, 'index'])->name('kabupaten.usulan');
+            Route::put('/verifikasi/usulan/{id}/update', [KabupatenPompaUsulanController::class, 'update'])->name('kabupaten.usulan.update');
+            Route::put('/verifikasi/usulan/{id}/approve', [KabupatenPompaUsulanController::class, 'approve'])->name('kabupaten.usulan.approve');
+            Route::put('/verifikasi/usulan/{id}/deny', [KabupatenPompaUsulanController::class, 'deny'])->name('kabupaten.usulan.deny');
             Route::get('/verifikasi/diterima', [KabupatenPompaDiterimaController::class, 'index'])->name('kabupaten.diterima');
+            Route::put('/verifikasi/diterima/{id}/update', [KabupatenPompaDiterimaController::class, 'update'])->name('kabupaten.diterima.update');
+            Route::put('/verifikasi/diterima/{id}/approve', [KabupatenPompaDiterimaController::class, 'approve'])->name('kabupaten.diterima.approve');
+            Route::put('/verifikasi/diterima/{id}/deny', [KabupatenPompaDiterimaController::class, 'deny'])->name('kabupaten.diterima.deny');
             Route::get('/verifikasi/dimanfaatkan', [KabupatenPompaDimanfaatkanController::class, 'index'])->name('kabupaten.dimanfaatkan');
+            Route::put('/verifikasi/dimanfaatkan/{id}/update', [KabupatenPompaDimanfaatkanController::class, 'update'])->name('kabupaten.dimanfaatkan.update');
+            Route::put('/verifikasi/dimanfaatkan/{id}/approve', [KabupatenPompaDimanfaatkanController::class, 'approve'])->name('kabupaten.dimanfaatkan.approve');
+            Route::put('/verifikasi/dimanfaatkan/{id}/deny', [KabupatenPompaDimanfaatkanController::class, 'deny'])->name('kabupaten.dimanfaatkan.deny');
             Route::get('/verifikasi/luas-tanam', [KabupatenLuasTanamController::class, 'index'])->name('kabupaten.luas_tanam');
         });
     });

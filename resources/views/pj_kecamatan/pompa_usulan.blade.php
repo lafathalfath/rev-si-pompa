@@ -1,11 +1,39 @@
 @extends('layouts.authenticated')
+@section('title')| Pompa Usulan @endsection
 @section('content')
 
 <div>
     <div class="text-xl font-bold">Data Pompa Diusulkan</div>
     {{-- <div class="flex justify-end mb-5"><button class="btn rounded-sm text-white bg-[#070] hover:bg-[#060]" onclick="create_usulan_modal.showModal()">+ Tambah Data</button></div> --}}
-    <div class="flex justify-end mb-5"><a href="{{ route('kecamatan.usulan.create') }}" class="btn rounded-sm text-white bg-[#070] hover:bg-[#060]">+ Tambah Data</a></div>
-    <table class="w-full">
+    <div class="flex items-end justify-between mt-5">
+        <div class="flex flex-col py-1">
+            <label for="search" class="text-semibold">Cari Data Pompa Diusulkan</label>
+            <input type="search" id="search" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" oninput="search(this)">
+        </div>
+        <a href="{{ route('kecamatan.usulan.create') }}" class="btn rounded-sm text-white bg-[#070] hover:bg-[#060]">+ Tambah Data</a>
+    </div>
+    <div class="mt-2 flex flex-wrap gap-2">
+        <div class="flex gap-2">
+            <label class="text-semibold">Status: </label>
+            <select class="py-1 rounded-sm border-1 border-gray-400" oninput="filterStatus(this)">
+                <option value="semua" selected>semua</option>
+                <option value="Terverifikasi">terverifikasi</option>
+                <option value="Ditolak">ditolak</option>
+                <option value="Belum Diverifikasi">belum diverifikasi</option>
+            </select>
+        </div>
+        <div class="flex gap-2">
+            <label class="text-semibold">Desa: </label>
+            <select class="py-1 rounded-sm border-1 border-gray-400" oninput="filterDesa(this)">
+                <option value="semua" selected>semua</option>
+                @foreach ($desa as $d)
+                    <option value="{{ $d->name }}">{{ $d->name }}</option>
+                @endforeach
+            </select>
+        </div>
+        <a href="" class="btn btn-sm text-white bg-gray-500 hover:bg-gray-600">Bersihkan</a>
+    </div>
+    <table class="w-full" id="usulan_table">
         <thead>
             <tr>
                 <th>No</th>
@@ -21,7 +49,7 @@
             {{-- {{ dd($api_token) }} --}}
             @forelse ($usulan as $usul)
                 <tr>
-                    <td>{{ $loop->iteration }}</td>
+                    <td id="number_row"></td>
                     <td>{{ $usul->desa }}</td>
                     <td class="flex items-center justify-between">
                         <div>{{ $usul->poktan }}</div>
@@ -31,11 +59,11 @@
                     <td>{{ $usul->total_unit }}</td>
                     <td>
                         @if ($usul->status == 'diverifikasi')
-                            <div class="badge bg-[#090] text-white font-semibold rounded-sm">Terverifikasi</div>
+                            <div id="status_verifikasi" class="badge bg-[#090] text-white font-semibold rounded-sm">Terverifikasi</div>
                         @elseif($usul->status == 'ditolak')
-                            <div class="badge text-white bg-red-600 font-semibold rounded-sm">Ditolak</div>
+                            <div id="status_verifikasi" class="badge text-white bg-red-600 font-semibold rounded-sm">Ditolak</div>
                         @else
-                            <div class="badge text-black bg-[#ffc800] font-semibold rounded-sm">Belum Diverifikasi</div>
+                            <div id="status_verifikasi" class="badge text-black bg-[#ffc800] font-semibold rounded-sm">Belum Diverifikasi</div>
                         @endif
                     </td>
                     <td>
@@ -140,6 +168,14 @@
 </div>
 
 <script>
+    const numbering = () => {
+        const rows = document.querySelectorAll('table tbody tr')
+        let index = 1
+        rows.forEach(row => {
+            if (row.style.display != 'none' && row.children[0].id == 'number_row') {row.children[0].textContent = `${index}`
+            index++}
+        });
+    }
     const editUsulan = (route, data) => {
         document.getElementById('edit_usulan_modal').showModal()
         document.getElementById('edit_usulan').action = route
@@ -159,8 +195,6 @@
         document.getElementById('delete_usulan_modal').showModal()
     }
     const detailPoktan = async (token, poktanName) => {
-        document.getElementById('detail_poktan_modal').showModal()
-        // const poktanName = document.getElementById('poktan_selected').value
         if (!poktanName) return
         try {
             const response = await fetch(`/api/poktan/${poktanName}`, {headers: {"Authorization": `Bearer ${token}`}})
@@ -177,6 +211,7 @@
                 iframe.src = kep.url
                 iframe.class = 'w-full border-1 border-black'
                 buktiContainer.appendChild(iframe)
+                document.getElementById('detail_poktan_modal').showModal()
             });
         } catch (err) {
             console.error(err.message)
@@ -192,5 +227,45 @@
         container.style.display = container.style.display == 'flex' ? 'none' : 'flex'
         e.innerHTML = e.innerHTML == 'Lihat Bukti Kepemilikan Lahan' ? 'Tutup Bukti Kepemilikan Lahan' : 'Lihat Bukti Kepemilikan Lahan'
     }
+    const search = (e) => {
+        const {value} = e
+        const table = document.getElementById('usulan_table')
+        const rows = document.querySelectorAll('#usulan_table tbody tr')
+        let num = 1
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase()
+            row.style.display = text.includes(value.toLowerCase()) ? '' : 'none'
+            row.children[0].textContent = text.includes(value.toLowerCase()) ? num : ''
+            if (text.includes(value.toLowerCase())) num++
+        });
+        numbering()
+    }
+    const filterStatus = (e) => {
+        const {value} = e
+        const rows = document.querySelectorAll('#usulan_table tbody tr')
+        const statuses = document.querySelectorAll(`#status_verifikasi`)
+        if (value == 'semua') {
+            statuses.forEach((status, index) => {
+                rows[index].style.display = ''
+            });
+        } else {
+            statuses.forEach((status, index) => {
+                rows[index].style.display = rows[index].textContent.includes(value) ? '' : 'none'
+            });
+        }
+        numbering()
+    }
+    const filterDesa = (e) => {
+        const {value} = e
+        const rows = document.querySelectorAll('#usulan_table tbody tr')
+        rows.forEach(row => {
+            const desaCellName = row.children[1].textContent
+            row.style.display = desaCellName == value || value == 'semua' ? '' : 'none'
+        });
+        numbering()
+    }
+
+
+    numbering()
 </script>
 @endsection

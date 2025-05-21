@@ -1,4 +1,5 @@
 @extends('layouts.authenticated')
+@section('title')| Dashboard @endsection
 @section('content')
 <style>
 

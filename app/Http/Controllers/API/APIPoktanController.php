@@ -33,12 +33,10 @@ class APIPoktanController extends Controller
     }
 
     public function getPoktanByName($name) {
-        $user = Auth::user();
-        $region = $user->region;
         $poktan = Poktan::where('name', $name)
             ->with('kepemilikan_tanah')->first();
-        $desa = Desa::select('name')->find($poktan->desa_id);
-        $poktan->full_address = $poktan->address.", $desa->name, ".$region->name.", ".$region->kabupaten->name.", ".$region->kabupaten->provinsi->name;
+        $desa = $poktan->desa;
+        $poktan->full_address = $poktan->address.", ".$desa->name.", ".$desa->kecamatan->name.", ".$desa->kecamatan->kabupaten->name.", ".$desa->kecamatan->kabupaten->provinsi->name;
         return response()->json($poktan);
     }
     

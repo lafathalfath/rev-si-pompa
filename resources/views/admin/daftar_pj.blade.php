@@ -1,4 +1,5 @@
 @extends('layouts.authenticated')
+@section('title')| Daftar Penanggung Jawab @endsection
 @section('content')
 <style>
     #region_container > button, #edit_region_container > button {

@@ -1,4 +1,5 @@
 @extends('layouts.auth')
+@section('title')| Aktivasi Akun @endsection
 @section('content')
 <style>
     .btn-lihat-password {

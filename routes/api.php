@@ -29,3 +29,4 @@ Route::get('/provinsi', [APIRegionController::class, 'getProvinsi']);
 Route::get('/kabupaten', [APIRegionController::class, 'getKabupaten']);
 Route::get('/kecamatan', [APIRegionController::class, 'getKecamatan']);
 Route::get('/desa', [APIRegionController::class, 'getDesa']);
+Route::get('/desa/{name}', [APIRegionController::class, 'getDesaByKecamatanName']);

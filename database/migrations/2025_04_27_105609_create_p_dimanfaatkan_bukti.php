@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('pompa_dimanfaatkan_id');
             $table->unsignedBigInteger('document_id');
-            $table->timestamps();
 
             $table->foreign('pompa_dimanfaatkan_id')->references('id')->on('pompa_dimanfaatkan');
             $table->foreign('document_id')->references('id')->on('document');

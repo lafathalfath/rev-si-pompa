@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('poktan_id');
             $table->unsignedBigInteger('document_id');
-            $table->timestamps();
 
             $table->foreign('poktan_id')->references('id')->on('poktan');
             $table->foreign('document_id')->references('id')->on('document');
