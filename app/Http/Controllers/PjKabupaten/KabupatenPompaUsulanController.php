@@ -37,6 +37,7 @@ class KabupatenPompaUsulanController extends Controller
         $user = Auth::user();
         $usulan = PompaUsulan::find(Crypt::decryptString($id));
         if (!$usulan) return back()->withErrors('Data tidak ditemukan');
+        if ($usulan->status == 'diverifikasi') return back()->withErrors('data yang telah diverifikasi tidak dapat diubah');
         $request->validate([
             'luas_lahan' => 'required|numeric',
             'total_unit' => 'required|numeric|min:1'

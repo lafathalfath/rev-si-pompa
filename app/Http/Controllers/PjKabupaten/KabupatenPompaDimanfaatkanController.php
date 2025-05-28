@@ -37,6 +37,7 @@ class KabupatenPompaDimanfaatkanController extends Controller
         $user = Auth::user();
         $dimanfaatkan = PompaDimanfaatkan::find(Crypt::decryptString($id));
         if (!$dimanfaatkan) return back()->withErrors('data pompa dimanfaatkan tidak ditemukan');
+        if ($dimanfaatkan->status == 'diverifikasi') return back()->withErrors('data yang telah diverifikasi tidak dapat diubah');
         $request->validate([
             'total_unit' => 'required|min:1'
         ], [

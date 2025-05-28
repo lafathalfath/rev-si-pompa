@@ -37,6 +37,7 @@ class KabupatenPompaDiterimaController extends Controller
         $user = Auth::user();
         $diterima = PompaDiterima::find(Crypt::decryptString($id));
         if (!$diterima) return back()->withErrors('data pompa diterima tidak ditemukan');
+        if ($diterima->status == 'diverifikasi') return back()->withErrors('data yang telah diverifikasi tidak dapat diubah');
         $request->validate([
             'total_unit' => 'required|min:1'
         ], [

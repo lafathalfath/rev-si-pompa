@@ -83,7 +83,7 @@ class KecamatanPompaDiterimaController extends Controller
     public function update($id, Request $request) {
         $diterima = PompaDiterima::find(Crypt::decryptString($id));
         if (!$diterima) return back()->withErrors('Data pompa tidak ditemukan');
-        if ($diterima->status == 'diverifikasi') return back()->withErrors('Data diverifikasi tidak dapat diubah');
+        if ($diterima->status == 'diverifikasi') return back()->withErrors('data yang telah diverifikasi tidak dapat diubah');
         $request->validate([
             'total_unit' => 'required|numeric|min:1'
         ], [
@@ -98,7 +98,7 @@ class KecamatanPompaDiterimaController extends Controller
     public function destroy($id) {
         $diterima = PompaDiterima::find(Crypt::decryptString($id));
         if (!$diterima) return back()->withErrors('Data pompa tidak ditemukan');
-        if ($diterima->status == 'diverifikasi') return back()->withErrors('Data diverifikasi tidak dapat dihapus');
+        if ($diterima->status == 'diverifikasi') return back()->withErrors('data yang telah diverifikasi tidak dapat dihapus');
         $diterima->delete();
         return back()->with('success', 'Data pompa diterima berhasil dihapus');
     }

@@ -11,6 +11,12 @@
         </div>
     </div>
     <div class="flex flex-wrap gap-2">
+        <div class="">
+            <label class="text-semibold">Tanggal: </label>
+            <input type="date" id="filter_date_start" class="py-1 rounded-sm border-1 border-gray-400" oninput="filterDate()">
+            s/d
+            <input type="date" id="filter_date_end" class="py-1 rounded-sm border-1 border-gray-400" oninput="filterDate()">
+        </div>
         <div>
             <label for="status">Status:</label>
             <select name="" id="status" class="py-1 px-2 rounded-sm border-1 border-gray-400" oninput="handleFilterStatus(this)">
@@ -47,6 +53,7 @@
         <thead>
             <tr>
                 <th>No</th>
+                <th>Tanggal</th>
                 <th>Kecamatan</th>
                 <th>Desa</th>
                 <th>Kelompok Tani</th>
@@ -61,6 +68,7 @@
                 <tr>
                     {{-- <td>{{ $loop->iteration }}</td> --}}
                     <td id="number_row"></td>
+                    <td>{{ $us->created_at }}</td>
                     <td id="kecamatan_entry">{{ $us->desa->kecamatan->name }}</td>
                     <td id="desa_entry">{{ $us->desa->name }}</td>
                     <td class="flex items-center justify-between">
@@ -242,6 +250,25 @@
         document.getElementById('deny_usulan').action = route
         document.getElementById('deny_usulan_modal').showModal()
     }
+    const filterDate = () => {
+        const startEl = document.getElementById('filter_date_start')
+        const endEl = document.getElementById('filter_date_end')
+        const start = new Date(startEl.value).getTime()
+        const end = new Date(endEl.value).getTime()
+        if (!start && !end) return
+        if (end < start) endEl.value = startEl.value
+        const rows = document.querySelectorAll('table tbody tr')
+        rows.forEach(row => {
+            const dateCellVal = new Date(new Date(row.children[1].textContent).toISOString().split('T')[0]).getTime()
+            let condition = false
+            if (start && !end && dateCellVal >= start) condition = true
+            else if (!start && end && dateCellVal <= end) condition = true
+            else if (start && end && dateCellVal >= start && dateCellVal <= end) condition = true
+            else condition = false
+            row.style.display = condition ? '' : 'none'
+        });
+        numbering()
+    }
     const handleFilterStatus = (e) => {
         const {value} = e
         const rows = document.querySelectorAll('#usulan_table tbody tr')
@@ -264,7 +291,7 @@
         const kecamatans = document.querySelectorAll('#kecamatan_entry')
         const filterDesa = document.getElementById('filter_desa')
         rows.forEach(row => {
-            const kecamatanCell = row.children[1]
+            const kecamatanCell = row.children[2]
             row.style.display = kecamatanCell.textContent.includes(value) || value == 'semua' ? '' : 'none'
         });
         if (value != 'semua') try {
@@ -292,7 +319,7 @@
         if (!value || value == '') return
         const rows = document.querySelectorAll('#usulan_table tbody tr')
         rows.forEach(row => {
-            const desaName = row.children[2].textContent
+            const desaName = row.children[3].textContent
             row.style.display = desaName.includes(value) ? '' : 'none'
         })
         numbering()

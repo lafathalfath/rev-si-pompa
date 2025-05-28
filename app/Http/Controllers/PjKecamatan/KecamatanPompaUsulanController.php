@@ -84,7 +84,7 @@ class KecamatanPompaUsulanController extends Controller
         $id = Crypt::decryptString($id);
         $usulan = PompaUsulan::find($id);
         if (!$usulan) return back()->withErrors('data pompa usulan tidak ditemukan');
-        if ($usulan->status == 'diverifikasi') return back()->withErrors('data pompa diusulkan sudah diverifikasi');
+        if ($usulan->status == 'diverifikasi') return back()->withErrors('data yang telah diverifikasi tidak dapat diubah');
         $request->validate([
             'desa_id' => 'required|numeric',
             'luas_lahan' => 'required|numeric',
@@ -106,6 +106,7 @@ class KecamatanPompaUsulanController extends Controller
     public function destroy($id) {
         $usulan = PompaUsulan::find(Crypt::decryptString($id));
         if (!$usulan) return back()->withErrors('data pompa usulan tidak ditemukan');
+        if ($usulan->status == 'diverifikasi') return back()->withErrors('data yang telah diverifikasi tidak dapat dihapus');
         if ($usulan->delete()) return back()->with('success', 'data pompa usulan berhasil dihapus');
     }
 

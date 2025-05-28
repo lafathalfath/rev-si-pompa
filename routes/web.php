@@ -69,6 +69,10 @@ Route::middleware('auth')->group(function () {
             Route::put('/input/dimanfaatkan/{id}/update', [KecamatanPompaDimanfaatkanController::class, 'update'])->name('kecamatan.dimanfaatkan.update');
             Route::delete('/input/dimanfaatkan/{id}/destroy', [KecamatanPompaDimanfaatkanController::class, 'destroy'])->name('kecamatan.dimanfaatkan.destroy');
             Route::get('/input/luas-tanam', [KecamatanLuasTanamController::class, 'index'])->name('kecamatan.luas_tanam');
+            Route::get('/input/luas-tanam/create', [KecamatanLuasTanamController::class, 'create'])->name('kecamatan.luas_tanam.create');
+            Route::post('/input/luas-tanam/store', [KecamatanLuasTanamController::class, 'store'])->name('kecamatan.luas_tanam.store');
+            Route::put('/input/luas-tanam/{id}/update', [KecamatanLuasTanamController::class, 'update'])->name('kecamatan.luas_tanam.update');
+            Route::delete('/input/luas-tanam/{id}/destroy', [KecamatanLuasTanamController::class, 'destroy'])->name('kecamatan.luas_tanam.destroy');
         });
         
         Route::middleware('access:pj_kabupaten')->group(function () {
@@ -85,6 +89,9 @@ Route::middleware('auth')->group(function () {
             Route::put('/verifikasi/dimanfaatkan/{id}/approve', [KabupatenPompaDimanfaatkanController::class, 'approve'])->name('kabupaten.dimanfaatkan.approve');
             Route::put('/verifikasi/dimanfaatkan/{id}/deny', [KabupatenPompaDimanfaatkanController::class, 'deny'])->name('kabupaten.dimanfaatkan.deny');
             Route::get('/verifikasi/luas-tanam', [KabupatenLuasTanamController::class, 'index'])->name('kabupaten.luas_tanam');
+            Route::put('/verifikasi/luas-tanam/{id}/update', [KabupatenLuasTanamController::class, 'update'])->name('kabupaten.luas_tanam.update');
+            Route::put('/verifikasi/luas-tanam/{id}/approve', [KabupatenLuasTanamController::class, 'approve'])->name('kabupaten.luas_tanam.approve');
+            Route::put('/verifikasi/luas-tanam/{id}/deny', [KabupatenLuasTanamController::class, 'deny'])->name('kabupaten.luas_tanam.deny');
         });
     });
 });

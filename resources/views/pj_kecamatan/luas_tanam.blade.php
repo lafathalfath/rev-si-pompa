@@ -12,6 +12,12 @@
                 <input type="search" id="search_luas_tanam" oninput="searchData(this)" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400">
             </div>
             <div class="mt-1 flex items-center gap-2">
+                <div class="">
+                    <label class="text-semibold">Tanggal: </label>
+                    <input type="date" id="filter_date_start" class="py-1 rounded-sm border-1 border-gray-400" oninput="filterDate()">
+                    s/d
+                    <input type="date" id="filter_date_end" class="py-1 rounded-sm border-1 border-gray-400" oninput="filterDate()">
+                </div>
                 <div>
                     <label for="filter_status">Status: </label>
                     <select id="filter_status" oninput="filterStatus(this)" class="py-1 px-2 rounded-sm border-1 border-gray-400">
@@ -33,16 +39,16 @@
                 <a href="" class="btn btn-sm text-white bg-gray-500 hover:bg-gray-600">Bersihkan</a>
             </div>
         </div>
-        <div class="flex justify-end"><a href="{{ route('kecamatan.diterima.create') }}" class="btn rounded-sm text-white bg-[#070] hover:bg-[#060]">+ Tambah Data</a></div>
+        <div class="flex justify-end"><a href="{{ route('kecamatan.luas_tanam.create') }}" class="btn rounded-sm text-white bg-[#070] hover:bg-[#060]">+ Tambah Data</a></div>
     </div>
     <table class="w-full">
         <thead>
             <tr>
                 <th>No.</th>
+                <th>Tanggal</th>
                 <th>Kelompok Tani</th>
                 <th>Desa</th>
                 <th>Luas Lahan (Ha)</th>
-                <th>Total Pompa Diterima</th>
                 <th>Luas Tanam (Ha)</th>
                 <th>Status</th>
                 <th>Aksi</th>
@@ -52,6 +58,7 @@
             @forelse ($luas_tanam as $lt)
                 <tr>
                     <td id="number_row"></td>
+                    <td>{{ $lt->created_at }}</td>
                     <td class="flex items-center justify-between">
                         <div>{{ $lt->pompa_diterima->pompa_usulan->poktan->name }}</div>
                         <button type="button" class="btn btn-sm bg-[#0bf] hover:bg-[#0ae] text-black rounded-sm" 
@@ -60,8 +67,7 @@
                     </td>
                     <td>{{ $lt->pompa_diterima->pompa_usulan->desa->name }}</td>
                     <td>{{ $lt->pompa_diterima->pompa_usulan->luas_lahan }}</td>
-                    <td>{{ $lt->pompa_diterima->pompa_usulan->total_unit }}</td>
-                    <td>{{ $lt->total_unit }}</td>
+                    <td>{{ $lt->luas_tanam }}</td>
                     <td>
                         @if ($lt->status == 'diverifikasi')
                             <div class="badge bg-[#090] text-white font-semibold rounded-sm">Terverifikasi</div>
@@ -74,10 +80,10 @@
                     <td>
                         @if ($lt->status != 'diverifikasi')
                             <button class="btn btn-sm bg-[#ffc800] hover:bg-[#eeb700] text-black rounded-sm" 
-                                onclick="editDiterima({{ $lt }}, '{{ route('kecamatan.diterima.update', Crypt::encryptString($lt->id)) }}')"
+                                onclick="editDiterima({{ $lt }}, '{{ route('kecamatan.luas_tanam.update', Crypt::encryptString($lt->id)) }}')"
                             >Edit</button>
                             <button class="btn btn-sm bg-red-600 hover:bg-red-700 text-white rounded-sm" 
-                                onclick="deleteDiterima('{{ route('kecamatan.diterima.destroy', Crypt::encryptString($lt->id)) }}')"
+                                onclick="deleteDiterima('{{ route('kecamatan.luas_tanam.destroy', Crypt::encryptString($lt->id)) }}')"
                             >Hapus</button>
                         @endif
                     </td>
@@ -149,13 +155,13 @@
                 </div>
                 <div class="flex flex-wrap gap-2">
                     <div class="flex flex-col py-1">
-                        <label class="text-semibold">Total Unit Diusulkan</label>
+                        <label class="text-semibold">Total Unit Diterima</label>
                         <input type="text" id="edit_luas_tanam_diterima_total_unit" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" readonly disabled>
                     </div>
                 </div>
                 <div class="flex flex-col py-1">
-                    <label for="total_unit" class="text-semibold">Total Unit Diterima </label>
-                    <input type="number" id="edit_luas_tanam_luas" min="0" name="total_unit" id="total_unit" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" required>
+                    <label for="luas_tanam" class="text-semibold">Luas Tanam (Ha) </label>
+                    <input type="number" id="edit_luas_tanam_luas" min="0" name="luas_tanam" id="luas_tanam" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" required>
                 </div>
             </form>
             <div class="modal-action"><button class="btn bg-[#ffc800] hover:bg-[#eeb700] text-black rounded-sm" onclick="edit_luas_tanam.submit()">Perbarui</button><form method="dialog"><button class="btn" onclick="closeEdit()">Tutup</button></form></div>
@@ -194,6 +200,25 @@
         });
         numbering()
     }
+    const filterDate = () => {
+        const startEl = document.getElementById('filter_date_start')
+        const endEl = document.getElementById('filter_date_end')
+        const start = new Date(startEl.value).getTime()
+        const end = new Date(endEl.value).getTime()
+        if (!start && !end) return
+        if (end < start) endEl.value = startEl.value
+        const rows = document.querySelectorAll('table tbody tr')
+        rows.forEach(row => {
+            const dateCellVal = new Date(new Date(row.children[1].textContent).toISOString().split('T')[0]).getTime()
+            let condition = false
+            if (start && !end && dateCellVal >= start) condition = true
+            else if (!start && end && dateCellVal <= end) condition = true
+            else if (start && end && dateCellVal >= start && dateCellVal <= end) condition = true
+            else condition = false
+            row.style.display = condition ? '' : 'none'
+        });
+        numbering()
+    }
     const filterStatus = (e) => {
         const {value} = e
         const rows = document.querySelectorAll('table tbody tr')
@@ -207,7 +232,7 @@
         const {value} = e
         const rows = document.querySelectorAll('table tbody tr')
         rows.forEach(row => {
-            const desaCell = row.children[2]
+            const desaCell = row.children[3]
             row.style.display = desaCell.textContent.includes(value) ? '' : 'none'
         });
         numbering()
@@ -251,7 +276,7 @@
         document.getElementById('edit_luas_tanam_luas_lahan').value = data?.pompa_diterima?.pompa_usulan?.luas_lahan
         document.getElementById('edit_luas_tanam_diterima_total_unit').value = data?.pompa_diterima?.total_unit
         document.getElementById('edit_luas_tanam_luas').max = data?.pompa_diterima?.pompa_usulan?.luas_lahan
-        document.getElementById('edit_luas_tanam_luas').value = data?.total_unit
+        document.getElementById('edit_luas_tanam_luas').value = data?.luas_tanam
         document.getElementById('edit_luas_tanam').action = route
         document.getElementById('edit_luas_tanam_modal').showModal()
     }

@@ -12,6 +12,12 @@
                 <input type="search" id="search_diterima" oninput="searchData(this)" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400">
             </div>
             <div class="mt-1 flex items-center gap-2">
+                <div class="">
+                    <label class="text-semibold">Tanggal: </label>
+                    <input type="date" id="filter_date_start" class="py-1 rounded-sm border-1 border-gray-400" oninput="filterDate()">
+                    s/d
+                    <input type="date" id="filter_date_end" class="py-1 rounded-sm border-1 border-gray-400" oninput="filterDate()">
+                </div>
                 <div>
                     <label for="filter_status">Status: </label>
                     <select id="filter_status" oninput="filterStatus(this)" class="py-1 px-2 rounded-sm border-1 border-gray-400">
@@ -44,6 +50,7 @@
         <thead>
             <tr>
                 <th>No.</th>
+                <th>Tanggal</th>
                 <th>Kelompok Tani</th>
                 <th>Kecamatan</th>
                 <th>Desa</th>
@@ -58,6 +65,7 @@
             @forelse ($diterima as $dt)
                 <tr>
                     <td id="number_row"></td>
+                    <td>{{ $dt->created_at }}</td>
                     <td class="flex items-center justify-between">
                         <div>{{ $dt->pompa_usulan->poktan->name }}</div>
                         <button type="button" class="btn btn-sm bg-[#0bf] hover:bg-[#0ae] text-black rounded-sm" 
@@ -214,11 +222,30 @@
         });
         numbering()
     }
+    const filterDate = () => {
+        const startEl = document.getElementById('filter_date_start')
+        const endEl = document.getElementById('filter_date_end')
+        const start = new Date(startEl.value).getTime()
+        const end = new Date(endEl.value).getTime()
+        if (!start && !end) return
+        if (end < start) endEl.value = startEl.value
+        const rows = document.querySelectorAll('table tbody tr')
+        rows.forEach(row => {
+            const dateCellVal = new Date(new Date(row.children[1].textContent).toISOString().split('T')[0]).getTime()
+            let condition = false
+            if (start && !end && dateCellVal >= start) condition = true
+            else if (!start && end && dateCellVal <= end) condition = true
+            else if (start && end && dateCellVal >= start && dateCellVal <= end) condition = true
+            else condition = false
+            row.style.display = condition ? '' : 'none'
+        });
+        numbering()
+    }
     const filterStatus = (e) => {
         const {value} = e
         const rows = document.querySelectorAll('table tbody tr')
         rows.forEach(row => {
-            const statusCell = row.children[7]
+            const statusCell = row.children[8]
             row.style.display = statusCell.textContent.includes(value) ? '' : 'none'
         });
         numbering()
@@ -227,7 +254,7 @@
         const {value} = e
         const rows = document.querySelectorAll('table tbody tr')
         rows.forEach(row => {
-            const desaCell = row.children[2]
+            const desaCell = row.children[3]
             row.style.display = desaCell.textContent.includes(value) ? '' : 'none'
         });
         if (value) try {
@@ -249,7 +276,7 @@
         const {value} = e
         const rows = document.querySelectorAll('table tbody tr')
         rows.forEach(row => {
-            const desaCell = row.children[3]
+            const desaCell = row.children[4]
             row.style.display = desaCell.textContent.includes(value) ? '' : 'none'
         });
         numbering()

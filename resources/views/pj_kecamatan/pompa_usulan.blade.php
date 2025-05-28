@@ -13,7 +13,13 @@
         <a href="{{ route('kecamatan.usulan.create') }}" class="btn rounded-sm text-white bg-[#070] hover:bg-[#060]">+ Tambah Data</a>
     </div>
     <div class="mt-2 flex flex-wrap gap-2">
-        <div class="flex gap-2">
+        <div class="flex gap-2 items-center">
+            <label class="text-semibold">Tanggal: </label>
+            <input type="date" id="filter_date_start" class="py-1 rounded-sm border-1 border-gray-400" oninput="filterDate()">
+            s/d
+            <input type="date" id="filter_date_end" class="py-1 rounded-sm border-1 border-gray-400" oninput="filterDate()">
+        </div>
+        <div class="flex gap-2 items-center">
             <label class="text-semibold">Status: </label>
             <select class="py-1 rounded-sm border-1 border-gray-400" oninput="filterStatus(this)">
                 <option value="semua" selected>semua</option>
@@ -22,7 +28,7 @@
                 <option value="Belum Diverifikasi">belum diverifikasi</option>
             </select>
         </div>
-        <div class="flex gap-2">
+        <div class="flex gap-2 items-center">
             <label class="text-semibold">Desa: </label>
             <select class="py-1 rounded-sm border-1 border-gray-400" oninput="filterDesa(this)">
                 <option value="semua" selected>semua</option>
@@ -37,6 +43,7 @@
         <thead>
             <tr>
                 <th>No</th>
+                <th>Tanggal</th>
                 <th>Desa</th>
                 <th>Kelompok Tani</th>
                 <th>Luas Lahan (Ha)</th>
@@ -50,6 +57,7 @@
             @forelse ($usulan as $usul)
                 <tr>
                     <td id="number_row"></td>
+                    <td>{{ $usul->created_at }}</td>
                     <td>{{ $usul->desa }}</td>
                     <td class="flex items-center justify-between">
                         <div>{{ $usul->poktan }}</div>
@@ -259,8 +267,27 @@
         const {value} = e
         const rows = document.querySelectorAll('#usulan_table tbody tr')
         rows.forEach(row => {
-            const desaCellName = row.children[1].textContent
+            const desaCellName = row.children[2].textContent
             row.style.display = desaCellName == value || value == 'semua' ? '' : 'none'
+        });
+        numbering()
+    }
+    const filterDate = () => {
+        const startEl = document.getElementById('filter_date_start')
+        const endEl = document.getElementById('filter_date_end')
+        const start = new Date(startEl.value).getTime()
+        const end = new Date(endEl.value).getTime()
+        if (!start && !end) return
+        if (end < start) endEl.value = startEl.value
+        const rows = document.querySelectorAll('table tbody tr')
+        rows.forEach(row => {
+            const dateCellVal = new Date(new Date(row.children[1].textContent).toISOString().split('T')[0]).getTime()
+            let condition = false
+            if (start && !end && dateCellVal >= start) condition = true
+            else if (!start && end && dateCellVal <= end) condition = true
+            else if (start && end && dateCellVal >= start && dateCellVal <= end) condition = true
+            else condition = false
+            row.style.display = condition ? '' : 'none'
         });
         numbering()
     }
