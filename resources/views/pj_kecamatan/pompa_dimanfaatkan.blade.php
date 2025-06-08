@@ -83,9 +83,12 @@
                     </td>
                     <td>
                         @if ($dt->status != 'diverifikasi')
-                            <button class="btn btn-sm bg-[#ffc800] hover:bg-[#eeb700] text-black rounded-sm" 
+                            {{-- <button class="btn btn-sm bg-[#ffc800] hover:bg-[#eeb700] text-black rounded-sm" 
                                 onclick="editDimanfaatkan({{ $dt }}, '{{ route('kecamatan.dimanfaatkan.update', Crypt::encryptString($dt->id)) }}')"
-                            >Edit</button>
+                            >Edit</button> --}}
+                            <a class="btn btn-sm bg-[#ffc800] hover:bg-[#eeb700] text-black rounded-sm" 
+                                href="{{ route('kecamatan.dimanfaatkan.increase', Crypt::encryptString($dt->pompa_diterima->id)) }}"
+                            >Edit</a>
                             <button class="btn btn-sm bg-red-600 hover:bg-red-700 text-white rounded-sm" 
                                 onclick="deleteDimanfaatkan('{{ route('kecamatan.dimanfaatkan.destroy', Crypt::encryptString($dt->id)) }}')"
                             >Hapus</button>

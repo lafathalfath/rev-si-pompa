@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\API\APINotificationController;
 use App\Http\Controllers\API\APIPoktanController;
 use App\Http\Controllers\API\APIRegionController;
 use Illuminate\Http\Request;
@@ -23,6 +24,12 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/poktan', [APIPoktanController::class, 'getPoktan']);
     Route::get('/poktan/{name}', [APIPoktanController::class, 'getPoktanByName']);
+    
+    Route::get('/notification', [APINotificationController::class, 'getAll']);
+    Route::get('/notification/{id}', [APINotificationController::class, 'get']);
+    Route::post('/notification', [APINotificationController::class, 'send']);
+    Route::put('/notification/{id}/mark-as-read', [APINotificationController::class, 'read']);
+    Route::delete('/notification/{id}/delete', [APINotificationController::class, 'delete']);
 });
 
 Route::get('/provinsi', [APIRegionController::class, 'getProvinsi']);

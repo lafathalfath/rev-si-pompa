@@ -10,6 +10,7 @@
     <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <style>
         .nav-link {
             width: 100%;
@@ -42,6 +43,9 @@
                     <div class="w-full flex flex-col items-center py-5 mb-10 border-b-1 border-white">
                         <img src="{{ asset('logobbpsip.png') }}" alt="">
                         <div class="text-xl font-semibold px-4 pt-2" id="app_name">SI-Pompa</div>
+                        <div class="px-5 mt-5">
+                            <button onclick="notification_modal.showModal()" class="cursor-pointer relative"><i class="fa fa-bell" style="font-size: 18px;"></i><div id="unreaded_notification_dot" class="absolute top-0 right-0 bg-red-500 w-2 h-2 rounded-full" style="display: none;"></div></button>
+                        </div>
                     </div>
                     <div class="flex flex-col">
                         <a href="{{ route('dashboard') }}" class="nav-link {{ request()->url() == route('dashboard') ? 'active' : '' }}">Dashboard</a>
@@ -97,7 +101,33 @@
         </div>
     </div>
 
+    <dialog id="notification_modal" class="modal">
+        <div class="modal-box">
+            <div>
+                <h3 class="text-lg font-bold">Notifikasi</h3>
+            </div>
+            <div class="flex flex-col gap-2 w-full mt-3" id="notification_list">
+                <div id="notification_items" class="w-full bg-[#0703] hover:bg-[#0603] py-1 px-3">
+                    <div class="m-0 p-0 text-xs flex items-center justify-end gap-1">
+                        <button class="text-[#060] hover:text-[#070] cursor-pointer">buat sudah dibaca</button>
+                        |
+                        <button class="text-red-600 hover:text-red-700 cursor-pointer">hapus</button>
+                    </div>
+                    <div class="text-md font-bold">[SUB] Subject Placeholder</div>
+                    <div class="w-full">Title</div>
+                    <div class="m-0 p-0 text-xs text-end text-gray-500">d M 00:00</div>
+                </div>
+            </div>
+            <div class="modal-action">
+                <form method="dialog"><button class="btn">Tutup</button></form>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
+
     <script>
+        const apiToken = @json(session('api_token'))
+
         const toggleMinimizeSidebar = () => {
             const sidebar = document.getElementById('sidebar')
             const navLink = document.getElementsByClassName('nav-link')
@@ -108,6 +138,42 @@
                 e.style.width = e.style.width
             });
         }
+
+        const getAllNotification = async () => {
+            try {
+                const response = await fetch('/api/notification', {
+                    headers: {"Authorization": `Bearer ${apiToken}`}
+                })
+                const data = await response.json()
+                if (!data) return
+                console.log(data)
+                document.getElementById('unreaded_notification_dot').style.display = data.has_any_read > 0 ? '' : 'none'
+                if (data.notifications) {
+                    const {notifications} = data
+                    const notificationElementList = document.getElementById('notification_list')
+                    let notificationItems = ''
+                    notifications.forEach(notif => {
+                        notificationItems += `
+                            <div id="notification_items" class="w-full ${notif.is_read ? 'hover:bg-gray-200' : 'bg-[#0703] hover:bg-[#0603]'} py-1 px-3">
+                                <div class="m-0 p-0 text-xs flex justify-end">
+                                    ${notif.is_read ?
+                                    '<button class="text-red-600 hover:text-red-700 cursor-pointer">hapus</button>'
+                                    : '<button class="text-[#060] hover:text-[#070] cursor-pointer">buat sudah dibaca</button>'}
+                                </div>
+                                <div class="text-md font-bold">${notif.subject}</div>
+                                <div class="w-full">${notif.title}</div>
+                                <div class="m-0 p-0 text-xs text-end text-gray-500">${notif.created_at}</div>
+                            </div>
+                        `
+                    });
+                    notificationElementList.innerHTML = notificationItems
+                }
+            } catch (err) {
+                console.error(err.message)
+            }
+        }
+
+        getAllNotification()
     </script>
 </body>
 </html>

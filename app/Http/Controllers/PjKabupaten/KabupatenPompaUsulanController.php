@@ -64,7 +64,7 @@ class KabupatenPompaUsulanController extends Controller
             'status' => 'diverifikasi'
         ]);
         if (!$update) return back()->withErrors('terjadi kesalahan');
-        return back()-with('success', 'data berhasil diverifikasi');
+        return back()->with('success', 'data berhasil diverifikasi');
     }
 
     public function deny($id) {

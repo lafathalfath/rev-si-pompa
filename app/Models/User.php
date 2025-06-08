@@ -5,10 +5,9 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Auth;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
@@ -48,7 +47,64 @@ class User extends Authenticatable
     public function region() {
         if ($this->role_id == 5) $region = Kecamatan::class;
         elseif ($this->role_id == 4) $region = Kabupaten::class;
-        else $region = Provinsi::class; // role_id 1 and 2 will passing null
+        else $region = Provinsi::class; // role_id 3 will returning provinsi, role_id 1 and 2 will returning empty
         return $this->hasOne($region, 'pj_id', 'id');
     }
+
+    public function notification_send(): HasMany {
+        return $this->hasMany(Notification::class, 'sender_id', 'id');
+    }
+
+    public function notification_receive(): HasMany {
+        return $this->hasMany(Notification::class, 'receiver_id', 'id');
+    }
+
+    public function create_poktan(): HasMany {
+        return $this->hasMany(Poktan::class, 'created_by', 'id');
+    }
+
+    public function update_poktan(): HasMany {
+        return $this->hasMany(Poktan::class, 'updated_by', 'id');
+    }
+
+    public function create_document(): HasMany {
+        return $this->hasMany(Document::class, 'created_by', 'id');
+    }
+
+    public function update_document(): HasMany {
+        return $this->hasMany(Document::class, 'updated_by', 'id');
+    }
+
+    public function create_pompa_usulan(): HasMany {
+        return $this->hasMany(PompaUsulan::class, 'created_by', 'id');
+    }
+
+    public function update_pompa_usulan(): HasMany {
+        return $this->hasMany(PompaUsulan::class, 'updated_by', 'id');
+    }
+
+    public function create_pompa_diterima(): HasMany {
+        return $this->hasMany(PompaDiterima::class, 'created_by', 'id');
+    }
+
+    public function update_pompa_diterima(): HasMany {
+        return $this->hasMany(PompaDiterima::class, 'updated_by', 'id');
+    }
+
+    public function create_pompa_dimanfaatkan(): HasMany {
+        return $this->hasMany(PompaDimanfaatkan::class, 'created_by', 'id');
+    }
+
+    public function update_pompa_dimanfaatkan(): HasMany {
+        return $this->hasMany(PompaDimanfaatkan::class, 'updated_by', 'id');
+    }
+
+    public function create_luas_tanam(): HasMany {
+        return $this->hasMany(LuasTanam::class, 'created_by', 'id');
+    }
+
+    public function update_luas_tanam(): HasMany {
+        return $this->hasMany(LuasTanam::class, 'updated_by', 'id');
+    }
+
 }

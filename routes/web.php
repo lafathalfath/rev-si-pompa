@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () { return redirect()->route('auth.login.view'); });
+Route::get('/manfaat_pengisiandata', function () { return view('pj_kecamatan.manfaat_pengisiandata'); });
 
 Route::prefix('/auth')->group(function () {
     Route::middleware('guest')->group(function () {
@@ -68,6 +69,9 @@ Route::middleware('auth')->group(function () {
             Route::post('/input/dimanfaatkan/store', [KecamatanPompaDimanfaatkanController::class, 'store'])->name('kecamatan.dimanfaatkan.store');
             Route::put('/input/dimanfaatkan/{id}/update', [KecamatanPompaDimanfaatkanController::class, 'update'])->name('kecamatan.dimanfaatkan.update');
             Route::delete('/input/dimanfaatkan/{id}/destroy', [KecamatanPompaDimanfaatkanController::class, 'destroy'])->name('kecamatan.dimanfaatkan.destroy');
+            Route::get('/{id}/tambah-jumlah', [KecamatanPompaDimanfaatkanController::class, 'increasePompaView'])->name('kecamatan.dimanfaatkan.increase');
+
+
             Route::get('/input/luas-tanam', [KecamatanLuasTanamController::class, 'index'])->name('kecamatan.luas_tanam');
             Route::get('/input/luas-tanam/create', [KecamatanLuasTanamController::class, 'create'])->name('kecamatan.luas_tanam.create');
             Route::post('/input/luas-tanam/store', [KecamatanLuasTanamController::class, 'store'])->name('kecamatan.luas_tanam.store');

@@ -46,7 +46,7 @@ class KecamatanPompaUsulanController extends Controller
         $kecamatan = $user->region;
         $desa = $kecamatan->desa;
         $poktan = null;
-        if ($request->poktan) $poktan = Poktan::find(Crypt::decryptString($request->poktan))->orderByDesc('created_at');
+        if ($request->poktan) $poktan = Poktan::find(Crypt::decryptString($request->poktan));
         return view('pj_kecamatan.create_pompa_usulan', [
             'api_token' => $token,
             'kecamatan' => $kecamatan,

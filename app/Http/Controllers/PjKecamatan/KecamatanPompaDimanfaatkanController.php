@@ -102,4 +102,11 @@ class KecamatanPompaDimanfaatkanController extends Controller
         if (!$dimanfaatkan->delete()) return back()->withErrors('terjadi kesalahan');
         return back()->with('success', 'data pompa dimanfaatkan berhasil dihapus');
     }
+
+    public function increasePompaView($id) {
+        $diterima = PompaDiterima::find(Crypt::decryptString($id));
+        return view('pj_kecamatan.manfaat_pengisiandata', [
+            'diterima' => $diterima
+        ]);
+    }
 }

@@ -39,8 +39,11 @@ class AuthController extends Controller
         if (!$isPasswordValid) return back()->withErrors('password tidak valid')->withInput();
         $attempt = Auth::attempt([$attempt_by => $request->name_or_email_or_nip, 'password' => $request->password]);
         if (!$attempt) return back()->withErrors('terjadi kesalahan');
+        $token = $user->createToken($user->name);
+        $token = str_replace($token->accessToken->id.'|', '', $token->plainTextToken);
+        session(['api_token' => $token]);
         // dd($attempt);
-        return back()->with('success', 'login berhasil')->withInput();
+        // return back()->with('success', 'login berhasil')->withInput();
         return redirect()->route('dashboard')->with('success', 'login berhasil');
     }
 

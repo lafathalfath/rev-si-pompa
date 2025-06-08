@@ -7,6 +7,7 @@
 <div>
     <div class="text-xl font-bold mb-10">Tambah Data Pompa Diusulkan</div>
     <div>
+        {{-- {{ dd($poktan) }} --}}
         <div class="mt-2">
             <div class="w-full" id="select_poktan" style="{{ $poktan ? 'display:none;' : '' }}">
                 <div class="text-lg font-semibold">Data Kelompok Tani</div>
