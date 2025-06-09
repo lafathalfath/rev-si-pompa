@@ -53,13 +53,13 @@
                     <th>Bukti</th>
                 </tr>
             </thead> 
-            <tbody>
+            <tbody class="text-center">
                     <tr>
-                        <td class="text-center">1</td>
-                        <td>d</td>
-                        <td>d</td>
-                        <td>d</td>
-                        <td><button>Detail</button></td>
+                        <td>1</td>
+                        <td>yyyy-mm-dd hh:mm:ss</td>
+                        <td>3.24</td>
+                        <td>5</td>
+                        <td class="flex justify-center"><a href="" class="btn btn-sm bg-[#0ae] hover:bg-[#08c] text-white rounded-sm">Detail</a></td>
                     </tr>
             </tbody>
         </table>

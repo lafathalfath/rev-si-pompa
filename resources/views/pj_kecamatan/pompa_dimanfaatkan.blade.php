@@ -52,6 +52,7 @@
                 <th>Total Usulan</th>
                 <th>Total Diterima</th>
                 <th>Total Dimanfaatkan</th>
+                <th>Total Luas Tanam (Ha)</th>
                 <th>Status</th>
                 <th>Aksi</th>
             </tr>
@@ -72,7 +73,8 @@
                     <td>{{ $dt->pompa_diterima->pompa_usulan->total_unit }}</td>
                     <td>{{ $dt->pompa_diterima->total_unit }}</td>
                     <td>{{ $dt->total_unit }}</td>
-                    <td>
+                    <td></td>
+                    <td class="text-nowrap">
                         @if ($dt->status == 'diverifikasi')
                             <div class="badge bg-[#090] text-white font-semibold rounded-sm">Terverifikasi</div>
                         @elseif($dt->status == 'ditolak')
@@ -236,7 +238,7 @@
         const {value} = e
         const rows = document.querySelectorAll('table tbody tr')
         rows.forEach(row => {
-            const statusCell = row.children[8]
+            const statusCell = row.children[9]
             row.style.display = statusCell.textContent.includes(value) ? '' : 'none'
         });
         numbering()
