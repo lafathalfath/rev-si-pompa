@@ -1,18 +1,18 @@
 @extends('layouts.authenticated')
-@section('title')| Luas Tanam Harian @endsection
+@section('title')| Pompa Dimanfaatkan @endsection
 @section('content')
     
 <div>
-    <div class="text-xl font-bold">Data Luas Tanam Harian</div>
+    <div class="text-xl font-bold">Data Pompa Dimanfaatkan</div>
     
     <div class="mt-5 mb-1 flex justify-between items-center">
         <div class="">
             <div>
-                <label for="search_luas_tanam">Cari data luas tanam harian</label><br>
-                <input type="search" id="search_luas_tanam" oninput="searchData(this)" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400">
+                <label for="search_dimanfaatkan">Cari data pompa dimanfaatkan</label><br>
+                <input type="search" id="search_dimanfaatkan" oninput="searchData(this)" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400">
             </div>
-            <div class="mt-1 flex flex-wrap items-center gap-2">
-                <div>
+            <div class="mt-1 flex items-center gap-2">
+                <div class="">
                     <label class="text-semibold">Tanggal: </label>
                     <input type="date" id="filter_date_start" class="py-1 rounded-sm border-1 border-gray-400" oninput="filterDate()">
                     s/d
@@ -28,23 +28,18 @@
                     </select>
                 </div>
                 <div>
-                    <label for="filter_kecamatan">Kecamatan: </label>
-                    <select id="filter_kecamatan" oninput="filterKecamatan(this)" class="py-1 px-2 rounded-sm border-1 border-gray-400">
-                        <option value="" selected>Semua</option>
-                        @foreach ($kecamatan as $kc)
-                            <option value="{{ $kc->name }}">{{ $kc->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div id="filter_desa_container" style="display: none;">
                     <label for="filter_desa">Desa: </label>
                     <select id="filter_desa" oninput="filterDesa(this)" class="py-1 px-2 rounded-sm border-1 border-gray-400">
                         <option value="" selected>Semua</option>
+                        @foreach ($desa as $ds)
+                            <option value="{{ $ds->name }}">{{ $ds->name }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <a href="" class="btn btn-sm text-white bg-gray-500 hover:bg-gray-600">Bersihkan</a>
             </div>
         </div>
+        <div class="flex justify-end"><a href="{{ route('kecamatan.dimanfaatkan.create') }}" class="btn rounded-sm text-white bg-[#070] hover:bg-[#060]">+ Tambah Data</a></div>
     </div>
     <table class="w-full">
         <thead>
@@ -52,56 +47,55 @@
                 <th>No.</th>
                 <th>Tanggal</th>
                 <th>Kelompok Tani</th>
-                <th>Kecamatan</th>
                 <th>Desa</th>
                 <th>Luas Lahan (Ha)</th>
-                <th>Luas Tanam (Ha)</th>
+                <th>Total Usulan</th>
+                <th>Total Diterima</th>
+                <th>Total Dimanfaatkan</th>
+                <th>Total Luas Tanam (Ha)</th>
                 <th>Status</th>
                 <th>Aksi</th>
             </tr>
         </thead>
         <tbody>
-            @forelse ($luas_tanam as $lt)
+            @forelse ($pompa as $pom)
                 <tr>
                     <td id="number_row"></td>
-                    <td>{{ $lt->created_at }}</td>
+                    <td>{{ $pom->created_at }}</td>
                     <td class="flex items-center justify-between">
-                        <div>{{ $lt->pompa_diterima->pompa_usulan->poktan->name }}</div>
+                        <div>{{ $pom->poktan->name }}</div>
                         <button type="button" class="btn btn-sm bg-[#0bf] hover:bg-[#0ae] text-black rounded-sm" 
-                            onclick="detailPoktan('{{ $api_token }}', '{{ $lt->pompa_diterima->pompa_usulan->poktan->name }}')"
+                            onclick="detailPoktan('{{ $api_token }}', '{{ $pom->poktan->name }}')"
                         >Detail</button>
                     </td>
-                    <td>{{ $lt->pompa_diterima->pompa_usulan->desa->kecamatan->name }}</td>
-                    <td>{{ $lt->pompa_diterima->pompa_usulan->desa->name }}</td>
-                    <td>{{ $lt->pompa_diterima->pompa_usulan->luas_lahan }}</td>
-                    <td>{{ $lt->luas_tanam }}</td>
-                    <td>
-                        @if ($lt->status == 'diverifikasi')
+                    <td>{{ $pom->desa->name }}</td>
+                    <td>{{ $pom->luas_lahan }}</td>
+                    <td>{{ $pom->diusulkan_unit }}</td>
+                    <td>{{ $pom->diterima_unit }}</td>
+                    <td>{{ $pom->dimanfaatkan_unit }}</td>
+                    <td></td>
+                    <td class="text-nowrap">
+                        @if ($pom->status == 'diverifikasi')
                             <div class="badge bg-[#090] text-white font-semibold rounded-sm">Terverifikasi</div>
-                        @elseif($lt->status == 'ditolak')
+                        @elseif($pom->status == 'ditolak')
                             <div class="badge text-white bg-red-600 font-semibold rounded-sm">Ditolak</div>
                         @else
                             <div class="badge text-black bg-[#ffc800] font-semibold rounded-sm">Belum Diverifikasi</div>
                         @endif
                     </td>
                     <td>
-                        @if ($lt->status == null)
-                            <button class="btn btn-sm bg-[#070] hover:bg-[#060] text-white rounded-sm" 
-                            onclick="verifikasi('{{ route('kabupaten.luas_tanam.approve', Crypt::encryptString($lt->id)) }}')"
-                            >Verifikasi</button>
+                        @if ($pom->status != 'diverifikasi')
+                            <a class="btn btn-sm bg-[#ffc800] hover:bg-[#eeb700] text-black rounded-sm" 
+                                href="{{ route('kecamatan.dimanfaatkan.increase', Crypt::encryptString($pom->id)) }}"
+                            >Ubah</a>
                             <button class="btn btn-sm bg-red-600 hover:bg-red-700 text-white rounded-sm" 
-                            onclick="tolak('{{ route('kabupaten.luas_tanam.deny', Crypt::encryptString($lt->id)) }}')"
-                            >Tolak</button>
-                        @endif
-                        @if ($lt->status == null || $lt->status == 'ditolak')
-                            <button class="btn btn-sm bg-[#ffc800] hover:bg-[#eeb700] text-black rounded-sm" 
-                            onclick="editDiterima({{ $lt }}, '{{ route('kabupaten.luas_tanam.update', Crypt::encryptString($lt->id)) }}')"
-                            >Ubah</button>
+                                onclick="deleteDimanfaatkan('{{ route('kecamatan.dimanfaatkan.destroy', Crypt::encryptString($pom->id)) }}')"
+                            >Hapus</button>
                         @endif
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="8" class="text-center">Data Kosong</td></tr>
+                <tr><td colspan="9" class="text-center">Data Kosong</td></tr>
             @endforelse
         </tbody>
     </table>
@@ -141,58 +135,60 @@
         </div>
         <form method="dialog" class="modal-backdrop"><button>close</button></form>
     </dialog>
-    <dialog id="edit_luas_tanam_modal" class="modal">
+    <dialog id="edit_dimanfaatkan_modal" class="modal">
         <div class="modal-box">
             <h3 class="text-lg font-bold">Ubah </h3>
-            <form action="" method="POST" id="edit_luas_tanam" class="py-4">
+            <form action="" method="POST" id="edit_dimanfaatkan" class="py-4">
                 @csrf
                 @method('PUT')
-                <div class="flex flex-col py-1">
-                    <label class="text-semibold">Kecamatan</label>
-                    <input type="text" id="edit_luas_tanam_kecamatan" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" readonly disabled>
+                <div class="flex flex-wrap gap-2">
+                    <div class="flex flex-col py-1">
+                        <label class="text-semibold">Desa</label>
+                        <input type="text" id="edit_dimanfaatkan_desa" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" readonly disabled>
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <div class="flex flex-col py-1">
+                        <label class="text-semibold">Kelompok Tani</label>
+                        <input type="text" id="edit_dimanfaatkan_poktan" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" readonly disabled>
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <div class="flex flex-col py-1">
+                        <label class="text-semibold">Luas Lahan (Ha)</label>
+                        <input type="text" id="edit_dimanfaatkan_luas_lahan" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" readonly disabled>
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <div class="flex flex-col py-1">
+                        <label class="text-semibold">Total Unit Diusulkan</label>
+                        <input type="text" id="edit_dimanfaatkan_usulan_total_unit" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" readonly disabled>
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <div class="flex flex-col py-1">
+                        <label class="text-semibold">Total Unit Diterima</label>
+                        <input type="text" id="edit_dimanfaatkan_terima_total_unit" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" readonly disabled>
+                    </div>
                 </div>
                 <div class="flex flex-col py-1">
-                    <label class="text-semibold">Desa</label>
-                    <input type="text" id="edit_luas_tanam_desa" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" readonly disabled>
-                </div>
-                <div class="flex flex-col py-1">
-                    <label class="text-semibold">Kelompok Tani</label>
-                    <input type="text" id="edit_luas_tanam_poktan" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" readonly disabled>
-                </div>
-                <div class="flex flex-col py-1">
-                    <label class="text-semibold">Luas Lahan (Ha)</label>
-                    <input type="text" id="edit_luas_tanam_luas_lahan" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" readonly disabled>
-                </div>
-                <div class="flex flex-col py-1">
-                    <label for="luas_tanam" class="text-semibold">Luas Tanam Harian (Ha)</label>
-                    <input type="number" id="edit_luas_tanam_luas_tanam" min="0" step="0.0001" name="luas_tanam" id="luas_tanam" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" required>
+                    <label for="total_unit" class="text-semibold">Total Unit Dimanfaatkan </label>
+                    <input type="number" id="edit_dimanfaatkan_total_unit" min="0" name="total_unit" id="total_unit" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" required>
                 </div>
             </form>
-            <div class="modal-action"><button class="btn bg-[#ffc800] hover:bg-[#eeb700] text-black rounded-sm" onclick="edit_luas_tanam.submit()">Perbarui</button><form method="dialog"><button class="btn" onclick="closeEdit()">Tutup</button></form></div>
+            <div class="modal-action"><button class="btn bg-[#ffc800] hover:bg-[#eeb700] text-black rounded-sm" onclick="edit_dimanfaatkan.submit()">Perbarui</button><form method="dialog"><button class="btn" onclick="closeEdit()">Tutup</button></form></div>
         </div>
         <form method="dialog" class="modal-backdrop"><button>close</button></form>
     </dialog>
-    <dialog id="verifikasi_data_modal" class="modal">
+    <dialog id="delete_dimanfaatkan_modal" class="modal">
         <div class="modal-box">
             <h3 class="text-lg font-bold">Konfirmasi</h3>
-            <form action="" method="POST" id="verifikasi_data" class="py-4">
+            <form action="" method="POST" id="delete_dimanfaatkan" class="py-4">
                 @csrf
-                @method('PUT')
-                Apakah Anda yakin ingin memverifikasi data Luas Tanam Harian ini?
+                @method('DELETE')
+                Apakah Anda yakin ingin menghapus data Pompa Dimanfaatkan ini?
             </form>
-            <div class="modal-action"><button class="btn bg-[#070] hover:bg-[#060] text-white" onclick="verifikasi_data.submit()">Ya</button><form method="dialog"><button class="btn">Batal</button></form></div>
-        </div>
-        <form method="dialog" class="modal-backdrop"><button>close</button></form>
-    </dialog>
-    <dialog id="tolak_data_modal" class="modal">
-        <div class="modal-box">
-            <h3 class="text-lg font-bold">Konfirmasi</h3>
-            <form action="" method="POST" id="tolak_data" class="py-4">
-                @csrf
-                @method('PUT')
-                Apakah Anda yakin ingin menolak verifiikasi data Luas Tanam Harian ini?
-            </form>
-            <div class="modal-action"><button class="btn bg-red-600 hover:bg-red-700 text-white" onclick="tolak_data.submit()">Ya</button><form method="dialog"><button class="btn">Batal</button></form></div>
+            <div class="modal-action"><button class="btn bg-red-600 hover:bg-red-700 text-white" onclick="delete_dimanfaatkan.submit()">Hapus</button><form method="dialog"><button class="btn">Batal</button></form></div>
         </div>
         <form method="dialog" class="modal-backdrop"><button>close</button></form>
     </dialog>
@@ -239,38 +235,16 @@
         const {value} = e
         const rows = document.querySelectorAll('table tbody tr')
         rows.forEach(row => {
-            const statusCell = row.children[7]
+            const statusCell = row.children[9]
             row.style.display = statusCell.textContent.includes(value) ? '' : 'none'
         });
         numbering()
-    }
-    const filterKecamatan = async (e) => {
-        const {value} = e
-        const rows = document.querySelectorAll('table tbody tr')
-        rows.forEach(row => {
-            const desaCell = row.children[3]
-            row.style.display = desaCell.textContent.includes(value) ? '' : 'none'
-        });
-        if (value) try {
-            const response = await fetch(`/api/desa/${value}`)
-            const data = await response.json()
-            document.getElementById('filter_desa_container').style.display = data ? '' : 'none'
-            if (data) {const filterDesa = document.getElementById('filter_desa')
-            let inner = '<option value="" selected>Semua</option>'
-            data.forEach(desa => {
-                inner += `<option value="${desa.name}">${desa.name}</option>`
-            });
-            filterDesa.innerHTML = inner
-            numbering()}
-        } catch (err) {
-            console.error(err.message)
-        }
     }
     const filterDesa = (e) => {
         const {value} = e
         const rows = document.querySelectorAll('table tbody tr')
         rows.forEach(row => {
-            const desaCell = row.children[4]
+            const desaCell = row.children[3]
             row.style.display = desaCell.textContent.includes(value) ? '' : 'none'
         });
         numbering()
@@ -308,28 +282,24 @@
         container.style.display = container.style.display == 'flex' ? 'none' : 'flex'
         e.innerHTML = e.innerHTML == 'Lihat Bukti Kepemilikan Lahan' ? 'Tutup Bukti Kepemilikan Lahan' : 'Lihat Bukti Kepemilikan Lahan'
     }
-    const editDiterima = (data, route) => {
-        document.getElementById('edit_luas_tanam_kecamatan').value = data?.pompa_diterima?.pompa_usulan?.desa?.kecamatan?.name
-        document.getElementById('edit_luas_tanam_desa').value = data?.pompa_diterima?.pompa_usulan?.desa?.name
-        document.getElementById('edit_luas_tanam_poktan').value = data?.pompa_diterima?.pompa_usulan?.poktan?.name
-        document.getElementById('edit_luas_tanam_luas_lahan').value = data?.pompa_diterima?.pompa_usulan?.luas_lahan
-        document.getElementById('edit_luas_tanam_luas_tanam').max = data?.pompa_diterima?.pompa_usulan?.total_unit
-        document.getElementById('edit_luas_tanam_luas_tanam').value = data?.luas_tanam
-        document.getElementById('edit_luas_tanam').action = route
-        document.getElementById('edit_luas_tanam_modal').showModal()
+    const editDimanfaatkan = (data, route) => {
+        document.getElementById('edit_dimanfaatkan_desa').value = data?.pompa_diterima?.pompa_usulan?.desa?.name
+        document.getElementById('edit_dimanfaatkan_poktan').value = data?.pompa_diterima?.pompa_usulan?.poktan?.name
+        document.getElementById('edit_dimanfaatkan_luas_lahan').value = data?.pompa_diterima?.pompa_usulan?.luas_lahan
+        document.getElementById('edit_dimanfaatkan_usulan_total_unit').value = data?.pompa_diterima?.pompa_usulan?.total_unit
+        document.getElementById('edit_dimanfaatkan_terima_total_unit').value = data?.pompa_diterima?.total_unit
+        document.getElementById('edit_dimanfaatkan_total_unit').max = data?.pompa_diterima?.total_unit
+        document.getElementById('edit_dimanfaatkan_total_unit').value = data?.total_unit
+        document.getElementById('edit_dimanfaatkan').action = route
+        document.getElementById('edit_dimanfaatkan_modal').showModal()
     }
-    const verifikasi = (route) => {
-        document.getElementById('verifikasi_data').action = route
-        document.getElementById('verifikasi_data_modal').showModal()
-    }
-    const tolak = (route) => {
-        document.getElementById('tolak_data').action = route
-        document.getElementById('tolak_data_modal').showModal()
+    const deleteDimanfaatkan = (route) => {
+        document.getElementById('delete_dimanfaatkan').action = route
+        document.getElementById('delete_dimanfaatkan_modal').showModal()
     }
 
 
     numbering()
 </script>
-
 
 @endsection

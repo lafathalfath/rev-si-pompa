@@ -1,31 +1,23 @@
 @extends('layouts.authenticated')
-@section('title')| Luas Tanam Harian @endsection
+@section('title')| History Pompa Diverifikasi @endsection
+
 @section('content')
     
 <div>
-    <div class="text-xl font-bold">Data Luas Tanam Harian</div>
+    <div class="text-xl font-bold">History Verifikasi</div>
     
     <div class="mt-5 mb-1 flex justify-between items-center">
         <div class="">
             <div>
-                <label for="search_luas_tanam">Cari data luas tanam harian</label><br>
-                <input type="search" id="search_luas_tanam" oninput="searchData(this)" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400">
+                <label for="search_diterima">Cari data history verifikasi</label><br>
+                <input type="search" id="search_diterima" oninput="searchData(this)" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400">
             </div>
-            <div class="mt-1 flex flex-wrap items-center gap-2">
-                <div>
+            <div class="mt-1 flex items-center gap-2">
+                <div class="">
                     <label class="text-semibold">Tanggal: </label>
                     <input type="date" id="filter_date_start" class="py-1 rounded-sm border-1 border-gray-400" oninput="filterDate()">
                     s/d
                     <input type="date" id="filter_date_end" class="py-1 rounded-sm border-1 border-gray-400" oninput="filterDate()">
-                </div>
-                <div>
-                    <label for="filter_status">Status: </label>
-                    <select id="filter_status" oninput="filterStatus(this)" class="py-1 px-2 rounded-sm border-1 border-gray-400">
-                        <option value="" selected>Semua</option>
-                        <option value="Belum Diverifikasi">Belum Diverifikasi</option>
-                        <option value="Terverifikasi">Terverifikasi</option>
-                        <option value="Ditolak">Ditolak</option>
-                    </select>
                 </div>
                 <div>
                     <label for="filter_kecamatan">Kecamatan: </label>
@@ -55,49 +47,35 @@
                 <th>Kecamatan</th>
                 <th>Desa</th>
                 <th>Luas Lahan (Ha)</th>
+                <th>Total Usulan</th>
+                <th>Total Diterima</th>
+                <th>Total Dimanfaatkan</th>
                 <th>Luas Tanam (Ha)</th>
-                <th>Status</th>
                 <th>Aksi</th>
             </tr>
         </thead>
         <tbody>
-            @forelse ($luas_tanam as $lt)
+            @forelse ($pompa as $pom)
                 <tr>
                     <td id="number_row"></td>
-                    <td>{{ $lt->created_at }}</td>
+                    <td>{{ $pom->created_at }}</td>
                     <td class="flex items-center justify-between">
-                        <div>{{ $lt->pompa_diterima->pompa_usulan->poktan->name }}</div>
+                        <div>{{ $pom->poktan->name }}</div>
                         <button type="button" class="btn btn-sm bg-[#0bf] hover:bg-[#0ae] text-black rounded-sm" 
-                            onclick="detailPoktan('{{ $api_token }}', '{{ $lt->pompa_diterima->pompa_usulan->poktan->name }}')"
+                            onclick="detailPoktan('{{ session('api_token') }}', '{{ $pom->poktan->name }}')"
                         >Detail</button>
                     </td>
-                    <td>{{ $lt->pompa_diterima->pompa_usulan->desa->kecamatan->name }}</td>
-                    <td>{{ $lt->pompa_diterima->pompa_usulan->desa->name }}</td>
-                    <td>{{ $lt->pompa_diterima->pompa_usulan->luas_lahan }}</td>
-                    <td>{{ $lt->luas_tanam }}</td>
+                    <td>{{ $pom->desa->kecamatan->name }}</td>
+                    <td>{{ $pom->desa->name }}</td>
+                    <td>{{ $pom->luas_lahan }}</td>
+                    <td>{{ $pom->diusulkan_unit }}</td>
+                    <td>{{ $pom->diterima_unit }}</td>
+                    <td>{{ $pom->dimanfaatkan_unit }}</td>
+                    <td>{{ $pom->total_tanam }}</td>
                     <td>
-                        @if ($lt->status == 'diverifikasi')
-                            <div class="badge bg-[#090] text-white font-semibold rounded-sm">Terverifikasi</div>
-                        @elseif($lt->status == 'ditolak')
-                            <div class="badge text-white bg-red-600 font-semibold rounded-sm">Ditolak</div>
-                        @else
-                            <div class="badge text-black bg-[#ffc800] font-semibold rounded-sm">Belum Diverifikasi</div>
-                        @endif
-                    </td>
-                    <td>
-                        @if ($lt->status == null)
-                            <button class="btn btn-sm bg-[#070] hover:bg-[#060] text-white rounded-sm" 
-                            onclick="verifikasi('{{ route('kabupaten.luas_tanam.approve', Crypt::encryptString($lt->id)) }}')"
-                            >Verifikasi</button>
-                            <button class="btn btn-sm bg-red-600 hover:bg-red-700 text-white rounded-sm" 
-                            onclick="tolak('{{ route('kabupaten.luas_tanam.deny', Crypt::encryptString($lt->id)) }}')"
-                            >Tolak</button>
-                        @endif
-                        @if ($lt->status == null || $lt->status == 'ditolak')
-                            <button class="btn btn-sm bg-[#ffc800] hover:bg-[#eeb700] text-black rounded-sm" 
-                            onclick="editDiterima({{ $lt }}, '{{ route('kabupaten.luas_tanam.update', Crypt::encryptString($lt->id)) }}')"
-                            >Ubah</button>
-                        @endif
+                        <div class="tooltip" data-tip="Pemanfaatan Pompa">
+                            <a href="{{ route('kabupaten.history.verified.detail', Crypt::encryptString($pom->id)) }}" class="btn btn-sm bg-[#0a0] hover:bg-[#080] text-white rounded-sm">&#10140;</a>
+                        </div>
                     </td>
                 </tr>
             @empty
@@ -141,61 +119,6 @@
         </div>
         <form method="dialog" class="modal-backdrop"><button>close</button></form>
     </dialog>
-    <dialog id="edit_luas_tanam_modal" class="modal">
-        <div class="modal-box">
-            <h3 class="text-lg font-bold">Ubah </h3>
-            <form action="" method="POST" id="edit_luas_tanam" class="py-4">
-                @csrf
-                @method('PUT')
-                <div class="flex flex-col py-1">
-                    <label class="text-semibold">Kecamatan</label>
-                    <input type="text" id="edit_luas_tanam_kecamatan" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" readonly disabled>
-                </div>
-                <div class="flex flex-col py-1">
-                    <label class="text-semibold">Desa</label>
-                    <input type="text" id="edit_luas_tanam_desa" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" readonly disabled>
-                </div>
-                <div class="flex flex-col py-1">
-                    <label class="text-semibold">Kelompok Tani</label>
-                    <input type="text" id="edit_luas_tanam_poktan" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" readonly disabled>
-                </div>
-                <div class="flex flex-col py-1">
-                    <label class="text-semibold">Luas Lahan (Ha)</label>
-                    <input type="text" id="edit_luas_tanam_luas_lahan" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" readonly disabled>
-                </div>
-                <div class="flex flex-col py-1">
-                    <label for="luas_tanam" class="text-semibold">Luas Tanam Harian (Ha)</label>
-                    <input type="number" id="edit_luas_tanam_luas_tanam" min="0" step="0.0001" name="luas_tanam" id="luas_tanam" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" required>
-                </div>
-            </form>
-            <div class="modal-action"><button class="btn bg-[#ffc800] hover:bg-[#eeb700] text-black rounded-sm" onclick="edit_luas_tanam.submit()">Perbarui</button><form method="dialog"><button class="btn" onclick="closeEdit()">Tutup</button></form></div>
-        </div>
-        <form method="dialog" class="modal-backdrop"><button>close</button></form>
-    </dialog>
-    <dialog id="verifikasi_data_modal" class="modal">
-        <div class="modal-box">
-            <h3 class="text-lg font-bold">Konfirmasi</h3>
-            <form action="" method="POST" id="verifikasi_data" class="py-4">
-                @csrf
-                @method('PUT')
-                Apakah Anda yakin ingin memverifikasi data Luas Tanam Harian ini?
-            </form>
-            <div class="modal-action"><button class="btn bg-[#070] hover:bg-[#060] text-white" onclick="verifikasi_data.submit()">Ya</button><form method="dialog"><button class="btn">Batal</button></form></div>
-        </div>
-        <form method="dialog" class="modal-backdrop"><button>close</button></form>
-    </dialog>
-    <dialog id="tolak_data_modal" class="modal">
-        <div class="modal-box">
-            <h3 class="text-lg font-bold">Konfirmasi</h3>
-            <form action="" method="POST" id="tolak_data" class="py-4">
-                @csrf
-                @method('PUT')
-                Apakah Anda yakin ingin menolak verifiikasi data Luas Tanam Harian ini?
-            </form>
-            <div class="modal-action"><button class="btn bg-red-600 hover:bg-red-700 text-white" onclick="tolak_data.submit()">Ya</button><form method="dialog"><button class="btn">Batal</button></form></div>
-        </div>
-        <form method="dialog" class="modal-backdrop"><button>close</button></form>
-    </dialog>
 
 </div>
 
@@ -232,15 +155,6 @@
             else if (start && end && dateCellVal >= start && dateCellVal <= end) condition = true
             else condition = false
             row.style.display = condition ? '' : 'none'
-        });
-        numbering()
-    }
-    const filterStatus = (e) => {
-        const {value} = e
-        const rows = document.querySelectorAll('table tbody tr')
-        rows.forEach(row => {
-            const statusCell = row.children[7]
-            row.style.display = statusCell.textContent.includes(value) ? '' : 'none'
         });
         numbering()
     }
@@ -308,28 +222,9 @@
         container.style.display = container.style.display == 'flex' ? 'none' : 'flex'
         e.innerHTML = e.innerHTML == 'Lihat Bukti Kepemilikan Lahan' ? 'Tutup Bukti Kepemilikan Lahan' : 'Lihat Bukti Kepemilikan Lahan'
     }
-    const editDiterima = (data, route) => {
-        document.getElementById('edit_luas_tanam_kecamatan').value = data?.pompa_diterima?.pompa_usulan?.desa?.kecamatan?.name
-        document.getElementById('edit_luas_tanam_desa').value = data?.pompa_diterima?.pompa_usulan?.desa?.name
-        document.getElementById('edit_luas_tanam_poktan').value = data?.pompa_diterima?.pompa_usulan?.poktan?.name
-        document.getElementById('edit_luas_tanam_luas_lahan').value = data?.pompa_diterima?.pompa_usulan?.luas_lahan
-        document.getElementById('edit_luas_tanam_luas_tanam').max = data?.pompa_diterima?.pompa_usulan?.total_unit
-        document.getElementById('edit_luas_tanam_luas_tanam').value = data?.luas_tanam
-        document.getElementById('edit_luas_tanam').action = route
-        document.getElementById('edit_luas_tanam_modal').showModal()
-    }
-    const verifikasi = (route) => {
-        document.getElementById('verifikasi_data').action = route
-        document.getElementById('verifikasi_data_modal').showModal()
-    }
-    const tolak = (route) => {
-        document.getElementById('tolak_data').action = route
-        document.getElementById('tolak_data_modal').showModal()
-    }
 
 
     numbering()
 </script>
-
 
 @endsection

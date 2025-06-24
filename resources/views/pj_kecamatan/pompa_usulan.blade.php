@@ -2,9 +2,10 @@
 @section('title')| Pompa Usulan @endsection
 @section('content')
 
+<div id="alert-container" class="flex flex-col gap-1 w-full"></div>
+
 <div>
     <div class="text-xl font-bold">Data Pompa Diusulkan</div>
-    {{-- <div class="flex justify-end mb-5"><button class="btn rounded-sm text-white bg-[#070] hover:bg-[#060]" onclick="create_usulan_modal.showModal()">+ Tambah Data</button></div> --}}
     <div class="flex items-end justify-between mt-5">
         <div class="flex flex-col py-1">
             <label for="search" class="text-semibold">Cari Data Pompa Diusulkan</label>
@@ -18,15 +19,6 @@
             <input type="date" id="filter_date_start" class="py-1 rounded-sm border-1 border-gray-400" oninput="filterDate()">
             s/d
             <input type="date" id="filter_date_end" class="py-1 rounded-sm border-1 border-gray-400" oninput="filterDate()">
-        </div>
-        <div class="flex gap-2 items-center">
-            <label class="text-semibold">Status: </label>
-            <select class="py-1 rounded-sm border-1 border-gray-400" oninput="filterStatus(this)">
-                <option value="semua" selected>semua</option>
-                <option value="Terverifikasi">terverifikasi</option>
-                <option value="Ditolak">ditolak</option>
-                <option value="Belum Diverifikasi">belum diverifikasi</option>
-            </select>
         </div>
         <div class="flex gap-2 items-center">
             <label class="text-semibold">Desa: </label>
@@ -48,38 +40,28 @@
                 <th>Kelompok Tani</th>
                 <th>Luas Lahan (Ha)</th>
                 <th>Total Unit</th>
-                <th>Status</th>
+                {{-- <th>Status</th> --}}
                 <th>Aksi</th>
             </tr>
         </thead>
         <tbody>
-            {{-- {{ dd($api_token) }} --}}
-            @forelse ($usulan as $usul)
+            @forelse ($pompa as $pom)
                 <tr>
                     <td id="number_row"></td>
-                    <td>{{ $usul->created_at }}</td>
-                    <td>{{ $usul->desa }}</td>
+                    <td>{{ $pom->created_at }}</td>
+                    <td>{{ $pom->desa }}</td>
                     <td class="flex items-center justify-between">
-                        <div>{{ $usul->poktan }}</div>
-                        <button type="button" class="btn btn-sm bg-[#0bf] hover:bg-[#0ae] text-black rounded-sm" onclick="detailPoktan('{{ $api_token }}', '{{ $usul->poktan }}')">Detail</button>
+                        <div>{{ $pom->poktan }}</div>
+                        <button type="button" class="btn btn-sm bg-[#0bf] hover:bg-[#0ae] text-black rounded-sm" onclick="detailPoktan('{{ $api_token }}', '{{ $pom->poktan }}')">Detail</button>
                     </td>
-                    <td>{{ $usul->luas_lahan }}</td>
-                    <td>{{ $usul->total_unit }}</td>
+                    <td>{{ $pom->luas_lahan }}</td>
+                    <td>{{ $pom->diusulkan_unit }}</td>
                     <td>
-                        @if ($usul->status == 'diverifikasi')
-                            <div id="status_verifikasi" class="badge bg-[#090] text-white font-semibold rounded-sm">Terverifikasi</div>
-                        @elseif($usul->status == 'ditolak')
-                            <div id="status_verifikasi" class="badge text-white bg-red-600 font-semibold rounded-sm">Ditolak</div>
-                        @else
-                            <div id="status_verifikasi" class="badge text-black bg-[#ffc800] font-semibold rounded-sm">Belum Diverifikasi</div>
-                        @endif
-                    </td>
-                    <td>
-                        @if ($usul->status != 'diverifikasi')
+                        @if ($pom->status_id == 1)
                             <button class="btn btn-sm bg-[#ffc800] hover:bg-[#eeb700] text-black rounded-sm" 
-                                onclick="editUsulan('{{ route('kecamatan.usulan.update', Crypt::encryptString($usul->id)) }}', {desa_id: {{ $usul->desa_id }}, luas_lahan: {{ $usul->luas_lahan }}, total_unit: {{ $usul->total_unit }}, poktan: '{{ $usul->poktan }}' })"
-                            >Edit</button>
-                            <button class="btn btn-sm bg-red-600 hover:bg-red-700 text-white rounded-sm" onclick="deleteUsulan('{{ route('kecamatan.usulan.destroy', Crypt::encryptString($usul->id)) }}')">Hapus</button>
+                                onclick="editUsulan('{{ route('kecamatan.usulan.update', Crypt::encryptString($pom->id)) }}', {desa_id: {{ $pom->desa_id }}, luas_lahan: {{ $pom->luas_lahan }}, diusulkan_unit: {{ $pom->diusulkan_unit }}, poktan: '{{ $pom->poktan }}' })"
+                            >Ubah</button>
+                            <button class="btn btn-sm bg-red-600 hover:bg-red-700 text-white rounded-sm" onclick="deleteUsulan('{{ route('kecamatan.usulan.destroy', Crypt::encryptString($pom->id)) }}')">Hapus</button>
                         @endif
                     </td>
                 </tr>
@@ -93,7 +75,8 @@
 
     <dialog id="edit_usulan_modal" class="modal">
         <div class="modal-box">
-            <h3 class="text-lg font-bold">Edit </h3>
+            <div id="alert-container-edit" class="flex flex-col gap-1 w-full"></div>
+            <h3 class="text-lg font-bold">Ubah </h3>
             <form action="" method="POST" id="edit_usulan" class="py-4">
                 @csrf
                 @method('PUT')
@@ -115,11 +98,11 @@
                     <input type="number" step="0.0001" min="0.0001" name="luas_lahan" id="edit_usulan_luas_lahan" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" required>
                 </div>
                 <div class="flex flex-col py-1">
-                    <label for="edit_usulan_total_unit" class="text-semibold">Jumlah Pompa Diusulkan</label>
-                    <input type="number" min="1" name="total_unit" id="edit_usulan_total_unit" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" required>
+                    <label for="edit_usulan_diusulkan_unit" class="text-semibold">Jumlah Pompa Diusulkan</label>
+                    <input type="number" min="1" name="diusulkan_unit" id="edit_usulan_diusulkan_unit" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" required>
                 </div>
             </form>
-            <div class="modal-action"><button class="btn bg-[#ffc800] hover:bg-[#eeb700] text-black rounded-sm" onclick="edit_usulan.submit()">Perbarui</button><form method="dialog"><button class="btn" onclick="closeEdit()">Tutup</button></form></div>
+            <div class="modal-action"><button class="btn bg-[#ffc800] hover:bg-[#eeb700] text-black rounded-sm" onclick="confirmUpdateUsulan()">Perbarui</button><form method="dialog"><button class="btn" onclick="closeEdit()">Tutup</button></form></div>
         </div>
         <form method="dialog" class="modal-backdrop"><button>close</button></form>
     </dialog>
@@ -173,6 +156,19 @@
         <form method="dialog" class="modal-backdrop"><button>close</button></form>
     </dialog>
 
+    <dialog id="confirm_update_usulan_modal" class="modal">
+        <div class="modal-box">
+            <h3 class="text-lg font-bold">Konfirmasi</h3>
+            Pastikan data yang Anda isi benar! <br>
+            Apakah Anda yakin memperbarui data ini?
+            <div class="modal-action">
+                <button class="btn bg-[#070] hover:bg-[#060] text-white" onclick="edit_usulan.submit()">Ya</button>
+                <form method="dialog"><button class="btn">Batal</button></form>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
+
 </div>
 
 <script>
@@ -189,14 +185,14 @@
         document.getElementById('edit_usulan').action = route
         document.getElementById('edit_usulan_desa').value = data.desa_id
         document.getElementById('edit_usulan_luas_lahan').value = data.luas_lahan
-        document.getElementById('edit_usulan_total_unit').value = data.total_unit
+        document.getElementById('edit_usulan_diusulkan_unit').value = data.diusulkan_unit
         document.getElementById('edit_usulan_poktan').value = data.poktan
     }
     const closeEdit = () => {
         document.getElementById('edit_usulan').action = ''
         document.getElementById('edit_usulan_desa').value = ''
         document.getElementById('edit_usulan_luas_lahan').value = ''
-        document.getElementById('edit_usulan_total_unit').value = ''
+        document.getElementById('edit_usulan_diusulkan_unit').value = ''
     }
     const deleteUsulan = (route) => {
         document.getElementById('delete_usulan').action = route
@@ -248,21 +244,6 @@
         });
         numbering()
     }
-    const filterStatus = (e) => {
-        const {value} = e
-        const rows = document.querySelectorAll('#usulan_table tbody tr')
-        const statuses = document.querySelectorAll(`#status_verifikasi`)
-        if (value == 'semua') {
-            statuses.forEach((status, index) => {
-                rows[index].style.display = ''
-            });
-        } else {
-            statuses.forEach((status, index) => {
-                rows[index].style.display = rows[index].textContent.includes(value) ? '' : 'none'
-            });
-        }
-        numbering()
-    }
     const filterDesa = (e) => {
         const {value} = e
         const rows = document.querySelectorAll('#usulan_table tbody tr')
@@ -290,6 +271,32 @@
             row.style.display = condition ? '' : 'none'
         });
         numbering()
+    }
+    const errValidation = (messages, containerId) => {
+        const container = document.getElementById(containerId);
+        let messageList = ''
+        messages.forEach(msg => {messageList += `<li>${msg}</li>`})
+        const alert = `<div role="alert" class="alert alert-error"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><div><lu>${messageList}</lu></div></div>`
+        container.innerHTML += alert
+    }
+    const confirmUpdateUsulan = () => {
+        const luasLahan = document.getElementById('edit_usulan_luas_lahan').value
+        const unit = document.getElementById('edit_usulan_diusulkan_unit').value
+        let anyErrors = false
+        let errors = []
+        if (luasLahan == 0 || luasLahan == '' || luasLahan == null) {
+            anyErrors = true
+            errors.push('Luas lahan diusulkan tidak boleh kosong')
+        }
+        if (unit == 0 || unit == '' || unit == null) {
+            anyErrors = true
+            errors.push('Jumlah pompa diusulkan tidak boleh kosong')
+        }
+        if (anyErrors) {
+            errValidation(errors, 'alert-container-edit')
+            return
+        }
+        document.getElementById('confirm_update_usulan_modal').showModal()
     }
 
 

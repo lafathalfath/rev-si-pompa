@@ -49,7 +49,7 @@
                         @endif
                     </td>
                     <td>
-                        <button type="button" onclick="editUserModal('{{ route('admin.edit_pj', Crypt::encryptString($usr->id)) }}', {{ $usr }})" class="btn btn-sm bg-[#ffc800] hover:bg-[#eeb700] text-black">Edit</button>
+                        <button type="button" onclick="editUserModal('{{ route('admin.edit_pj', Crypt::encryptString($usr->id)) }}', {{ $usr }})" class="btn btn-sm bg-[#ffc800] hover:bg-[#eeb700] text-black">Ubah</button>
                         <button type="button" onclick="deleteUser('{{ route('admin.hapus_pj', Crypt::encryptString($usr->id)) }}')" class="btn btn-sm bg-red-600 hover:bg-red-700 text-white">Hapus</button>
                     </td>
                 </tr>

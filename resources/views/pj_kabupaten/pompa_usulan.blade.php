@@ -18,15 +18,6 @@
             <input type="date" id="filter_date_end" class="py-1 rounded-sm border-1 border-gray-400" oninput="filterDate()">
         </div>
         <div>
-            <label for="status">Status:</label>
-            <select name="" id="status" class="py-1 px-2 rounded-sm border-1 border-gray-400" oninput="handleFilterStatus(this)">
-                <option value="semua" selected>semua</option>
-                <option value="Terverifikasi">terverifikasi</option>
-                <option value="Ditolak">ditolak</option>
-                <option value="Belum Diverifikasi">belum diverifikasi</option>
-            </select>
-        </div>
-        <div>
             <label for="kecamatan">Kecamatan:</label>
             <select name="" id="kecamatan" class="py-1 px-2 rounded-sm border-1 border-gray-400" 
                 oninput="handleFilterKecamatan(this)"
@@ -59,46 +50,36 @@
                 <th>Kelompok Tani</th>
                 <th>Luas Lahan (Ha)</th>
                 <th>Total Unit</th>
-                <th>Status</th>
                 <th>Aksi</th>
             </tr>
         </thead>
         <tbody>
-            @forelse ($usulan as $us)
+            @forelse ($pompa as $pom)
                 <tr>
                     {{-- <td>{{ $loop->iteration }}</td> --}}
                     <td id="number_row"></td>
-                    <td>{{ $us->created_at }}</td>
-                    <td id="kecamatan_entry">{{ $us->desa->kecamatan->name }}</td>
-                    <td id="desa_entry">{{ $us->desa->name }}</td>
+                    <td>{{ $pom->created_at }}</td>
+                    <td id="kecamatan_entry">{{ $pom->desa->kecamatan->name }}</td>
+                    <td id="desa_entry">{{ $pom->desa->name }}</td>
                     <td class="flex items-center justify-between">
-                        <div>{{ $us->poktan->name }}</div>
+                        <div>{{ $pom->poktan->name }}</div>
                         <button type="button"
-                            onclick="detailPoktan('{{ $us->poktan->name }}', '{{ $api_token }}')"
+                            onclick="detailPoktan('{{ $pom->poktan->name }}', '{{ $api_token }}')"
                         class="btn btn-sm bg-[#0bf] hover:bg-[#0ae] text-black rounded-sm">Detail</button>
                     </td>
-                    <td>{{ $us->luas_lahan }}</td>
-                    <td>{{ $us->total_unit }}</td>
+                    <td>{{ $pom->luas_lahan }}</td>
+                    <td>{{ $pom->diusulkan_unit }}</td>
                     <td>
-                        @if ($us->status == 'diverifikasi')
-                            <div id="status_verifikasi" class="badge bg-[#090] text-white font-semibold rounded-sm">Terverifikasi</div>
-                        @elseif($us->status == 'ditolak')
-                            <div id="status_verifikasi" class="badge text-white bg-red-600 font-semibold rounded-sm">Ditolak</div>
-                        @else
-                            <div id="status_verifikasi" class="badge text-black bg-[#ffc800] font-semibold rounded-sm">Belum Diverifikasi</div>
-                        @endif
-                    </td>
-                    <td>
-                        @if ($us->status != 'diverifikasi')
+                        @if ($pom->status_id == 1)
                             <button class="btn btn-sm bg-[#ffc800] hover:bg-[#eeb700] text-black rounded-sm" 
-                            onclick="editUsulan('{{ route('kabupaten.usulan.update', Crypt::encryptString($us->id)) }}', {{ $us }}, '{{ $us->desa->kecamatan->name }}')"
-                            >Edit</button>
-                            @if ($us->status != 'ditolak')
-                                <button class="btn btn-sm bg-[#070] hover:bg-[#060] text-white rounded-sm" 
-                                onclick="approveUsulan('{{ route('kabupaten.usulan.approve', Crypt::encryptString($us->id)) }}')"
+                            onclick="editUsulan('{{ route('kabupaten.usulan.update', Crypt::encryptString($pom->id)) }}', {{ $pom }}, '{{ $pom->desa->kecamatan->name }}')"
+                            >Ubah</button>
+                            @if ($pom->status != 'ditolak')
+                                <button class="btn btn-sm bg-[#0a0] hover:bg-[#080] text-white rounded-sm" 
+                                onclick="approveUsulan('{{ route('kabupaten.usulan.approve', Crypt::encryptString($pom->id)) }}', {{ $pom->diusulkan_unit }})"
                                 >Verifikasi</button>
                                 <button class="btn btn-sm bg-red-600 hover:bg-red-700 text-white rounded-sm"
-                                onclick="approveUsulan('{{ route('kabupaten.usulan.deny', Crypt::encryptString($us->id)) }}')"
+                                onclick="denyUsulan('{{ route('kabupaten.usulan.deny', Crypt::encryptString($pom->id)) }}')"
                                 >Tolak</button>
                             @endif
                         @endif
@@ -114,7 +95,8 @@
 
     <dialog id="edit_usulan_modal" class="modal">
         <div class="modal-box">
-            <h3 class="text-lg font-bold">Edit </h3>
+            <div id="alert-container-edit" class="flex flex-col gap-1 w-full"></div>
+            <h3 class="text-lg font-bold">Ubah </h3>
             <form action="" method="POST" id="edit_usulan" class="py-4">
                 @csrf
                 @method('PUT')
@@ -135,23 +117,28 @@
                     <input type="number" step="0.0001" min="0.0001" name="luas_lahan" id="edit_usulan_luas_lahan" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" required>
                 </div>
                 <div class="flex flex-col py-1">
-                    <label for="edit_usulan_total_unit" class="text-semibold">Jumlah Pompa Diusulkan</label>
-                    <input type="number" min="1" name="total_unit" id="edit_usulan_total_unit" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" required>
+                    <label for="edit_usulan_diusulkan_unit" class="text-semibold">Jumlah Pompa Diusulkan</label>
+                    <input type="number" min="1" name="diusulkan_unit" id="edit_usulan_diusulkan_unit" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" required>
                 </div>
             </form>
-            <div class="modal-action"><button class="btn bg-[#ffc800] hover:bg-[#eeb700] text-black rounded-sm" onclick="edit_usulan.submit()">Perbarui</button><form method="dialog"><button class="btn" onclick="closeEdit()">Tutup</button></form></div>
+            <div class="modal-action"><button class="btn bg-[#ffc800] hover:bg-[#eeb700] text-black rounded-sm" onclick="confirmUpdate()">Perbarui</button><form method="dialog"><button class="btn" onclick="closeEdit()">Tutup</button></form></div>
         </div>
         <form method="dialog" class="modal-backdrop"><button>close</button></form>
     </dialog>
     <dialog id="approve_usulan_modal" class="modal">
         <div class="modal-box">
+            <div id="alert-container-approve" class="flex flex-col gap-1 w-full"></div>
             <h3 class="text-lg font-bold">Konfirmasi</h3>
             <form action="" method="POST" id="approve_usulan" class="py-4">
                 @csrf
                 @method('PUT')
-                Apakah Anda yakin ingin memverifikasi data Pompa Diusulkan ini?
+                Apakah Anda yakin ingin memverifikasi data pompa diusulkan ini?
+                <div>
+                    <label for="diterima_unit">Masukkan jumlah pompa diterima: </label>
+                    <input type="number" min="1" name="diterima_unit" id="diterima_unit" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" required>
+                </div>
             </form>
-            <div class="modal-action"><button class="btn bg-[#070] hover:bg-[#060] text-white" onclick="approve_usulan.submit()">Verifikasi</button><form method="dialog"><button class="btn">Batal</button></form></div>
+            <div class="modal-action"><button class="btn bg-[#070] hover:bg-[#060] text-white" onclick="confirmApprove()">Verifikasi</button><form method="dialog"><button class="btn" onclick="diterima_unit.value=''">Batal</button></form></div>
         </div>
         <form method="dialog" class="modal-backdrop"><button>close</button></form>
     </dialog>
@@ -203,6 +190,19 @@
         <form method="dialog" class="modal-backdrop"><button>close</button></form>
     </dialog>
 
+    <dialog id="confirm_update_modal" class="modal">
+        <div class="modal-box">
+            <h3 class="text-lg font-bold">Konfirmasi</h3>
+            Pastikan data yang Anda isi benar! <br>
+            Apakah Anda yakin memperbarui data ini?
+            <div class="modal-action">
+                <button class="btn bg-[#070] hover:bg-[#060] text-white" onclick="edit_usulan.submit()">Ya</button>
+                <form method="dialog"><button class="btn">Batal</button></form>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
+
 </div>
 
 <script>
@@ -233,18 +233,19 @@
         document.getElementById('edit_usulan_kecamatan').value = kecamatan
         document.getElementById('edit_usulan_desa').value = data.desa.name
         document.getElementById('edit_usulan_luas_lahan').value = data.luas_lahan
-        document.getElementById('edit_usulan_total_unit').value = data.total_unit
+        document.getElementById('edit_usulan_diusulkan_unit').value = data.diusulkan_unit
         document.getElementById('edit_usulan_poktan').value = data.poktan.name
     }
     const closeEdit = () => {
         document.getElementById('edit_usulan').action = ''
         document.getElementById('edit_usulan_desa').value = ''
         document.getElementById('edit_usulan_luas_lahan').value = ''
-        document.getElementById('edit_usulan_total_unit').value = ''
+        document.getElementById('edit_usulan_diusulkan_unit').value = ''
     }
-    const approveUsulan = (route) => {
+    const approveUsulan = (route, usulan) => {
         document.getElementById('approve_usulan').action = route
         document.getElementById('approve_usulan_modal').showModal()
+        document.getElementById('diterima_unit').max = usulan
     }
     const denyUsulan = (route) => {
         document.getElementById('deny_usulan').action = route
@@ -267,21 +268,6 @@
             else condition = false
             row.style.display = condition ? '' : 'none'
         });
-        numbering()
-    }
-    const handleFilterStatus = (e) => {
-        const {value} = e
-        const rows = document.querySelectorAll('#usulan_table tbody tr')
-        const statuses = document.querySelectorAll(`#status_verifikasi`)
-        if (value == 'semua') {
-            statuses.forEach((status, index) => {
-                rows[index].style.display = ''
-            });
-        } else {
-            statuses.forEach((status, index) => {
-                rows[index].style.display = rows[index].textContent.includes(value) ? '' : 'none'
-            });
-        }
         numbering()
     }
     const handleFilterKecamatan = async (e) => {
@@ -357,7 +343,46 @@
         container.style.display = container.style.display == 'flex' ? 'none' : 'flex'
         e.innerHTML = e.innerHTML == 'Lihat Bukti Kepemilikan Lahan' ? 'Tutup Bukti Kepemilikan Lahan' : 'Lihat Bukti Kepemilikan Lahan'
     }
-    
+    const errValidation = (messages, containerId) => {
+        const container = document.getElementById(containerId);
+        let messageList = ''
+        messages.forEach(msg => {messageList += `<li>${msg}</li>`})
+        const alert = `<div role="alert" class="alert alert-error"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><div><lu>${messageList}</lu></div></div>`
+        container.innerHTML += alert
+    }
+    const confirmUpdate = () => {
+        const luasLahan = document.getElementById('edit_usulan_luas_lahan').value
+        const unit = document.getElementById('edit_usulan_diusulkan_unit').value
+        let anyErrors = false
+        let errors = []
+        if (unit == 0 || unit == '' || unit == null) {
+            anyErrors = true
+            errors.push('Jumlah pemanfaatan pompa tidak boleh kosong')
+        }
+        if (luasLahan == 0 || luasLahan == '' || luasLahan == null) {
+            anyErrors = true
+            errors.push('Luas lahan diusulkan tidak boleh kosong')
+        }
+        if (anyErrors) {
+            errValidation(errors, 'alert-container-edit')
+            return
+        }
+        document.getElementById('confirm_update_modal').showModal()
+    }
+    const confirmApprove = () => {
+        const unit = document.getElementById('diterima_unit').value
+        let anyErrors = false
+        let errors = []
+        if (unit == 0 || unit == '' || unit == null) {
+            anyErrors = true
+            errors.push('Jumlah pompa diterima tidak boleh kosong')
+        }
+        if (anyErrors) {
+            errValidation(errors, 'alert-container-approve')
+            return
+        }
+        document.getElementById('approve_usulan').submit()
+    }
     
     numbering()
 </script>

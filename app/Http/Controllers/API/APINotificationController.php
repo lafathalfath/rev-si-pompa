@@ -15,20 +15,22 @@ class APINotificationController extends Controller
     
     public function getAll() {
         $user = Auth::user();
-        $notifications = Notification::select(['id', 'subject', 'title', 'created_at', 'is_read'])
-            ->where('receiver_id', $user->id);
-        $has_any_read = $notifications->where('is_read', true)->first() != null;
-        $notifications = $notifications
+        $notifications = Notification::where('receiver_id', $user->id)
             ->orderByDesc('created_at')
             ->get();
+        $has_any_unread = Notification::select('is_read')
+            ->where('receiver_id', $user->id)
+            ->where('is_read', false)
+            ->first() != null;
         return response()->json([
-            'has_any_read' => $has_any_read,
-            'notifications' => $notifications
+            'has_any_unread' => $has_any_unread,
+            'notifications' => $notifications,
         ]);
     }
 
     public function get($id) {
-        $notification = Notification::find(Crypt::decryptString($id));
+        $notification = Notification::find($id);
+        $notification->links = $notification->links;
         if (!$notification) return error('notifikasi tidak ditemukan');
         return response()->json($notification);
     }

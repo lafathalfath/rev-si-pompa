@@ -19,15 +19,6 @@
                     <input type="date" id="filter_date_end" class="py-1 rounded-sm border-1 border-gray-400" oninput="filterDate()">
                 </div>
                 <div>
-                    <label for="filter_status">Status: </label>
-                    <select id="filter_status" oninput="filterStatus(this)" class="py-1 px-2 rounded-sm border-1 border-gray-400">
-                        <option value="" selected>Semua</option>
-                        <option value="Belum Diverifikasi">Belum Diverifikasi</option>
-                        <option value="Terverifikasi">Terverifikasi</option>
-                        <option value="Ditolak">Ditolak</option>
-                    </select>
-                </div>
-                <div>
                     <label for="filter_kecamatan">Kecamatan: </label>
                     <select id="filter_kecamatan" oninput="filterKecamatan(this)" class="py-1 px-2 rounded-sm border-1 border-gray-400">
                         <option value="" selected>Semua</option>
@@ -58,54 +49,46 @@
                 <th>Total Usulan</th>
                 <th>Total Diterima</th>
                 <th>Total Dimanfaatkan</th>
-                <th>Status</th>
+                <th>Total Luas Tanam (Ha)</th>
                 <th>Aksi</th>
             </tr>
         </thead>
         <tbody>
-            @forelse ($dimanfaatkan as $dt)
+            @forelse ($pompa as $pom)
+                @php
+                    $pompa_progress = round($pom->dimanfaatkan_unit*100/$pom->diterima_unit);
+                    $luas_tanam_progress = round($pom->total_tanam*100/$pom->luas_lahan);
+                @endphp
                 <tr>
                     <td id="number_row"></td>
-                    <td>{{ $dt->created_at }}</td>
+                    <td>{{ $pom->created_at }}</td>
                     <td class="flex items-center justify-between">
-                        <div>{{ $dt->pompa_diterima->pompa_usulan->poktan->name }}</div>
+                        <div>{{ $pom->poktan->name }}</div>
                         <button type="button" class="btn btn-sm bg-[#0bf] hover:bg-[#0ae] text-black rounded-sm" 
-                            onclick="detailPoktan('{{ $api_token }}', '{{ $dt->pompa_diterima->pompa_usulan->poktan->name }}')"
+                            onclick="detailPoktan('{{ $api_token }}', '{{ $pom->poktan->name }}')"
                         >Detail</button>
                     </td>
-                    <td>{{ $dt->pompa_diterima->pompa_usulan->desa->kecamatan->name }}</td>
-                    <td>{{ $dt->pompa_diterima->pompa_usulan->desa->name }}</td>
-                    <td>{{ $dt->pompa_diterima->pompa_usulan->luas_lahan }}</td>
-                    <td>{{ $dt->pompa_diterima->pompa_usulan->total_unit }}</td>
-                    <td>{{ $dt->pompa_diterima->total_unit }}</td>
-                    <td>{{ $dt->total_unit }}</td>
+                    <td>{{ $pom->desa->kecamatan->name }}</td>
+                    <td>{{ $pom->desa->name }}</td>
+                    <td>{{ $pom->luas_lahan }}</td>
+                    <td>{{ $pom->diusulkan_unit }}</td>
+                    <td>{{ $pom->diterima_unit }}</td>
+                    <td><div class="flex items-center justify-center gap-2">
+                        <div>{{ $pom->dimanfaatkan_unit }}</div>
+                        <div id="progress_percentage" class="radial-progress text-xs" style="--value:{{ $pompa_progress }};--size:2.2rem;--thickness:0.2rem;" aria-valuenow="{{ $pompa_progress }}" role="progressbar">{{ $pompa_progress }}%</div>
+                    </div></td>
+                    <td><div class="flex items-center justify-center gap-2">
+                        <div>{{ $pom->total_tanam }}</div>
+                        <div id="progress_percentage" class="radial-progress text-xs" style="--value:{{ $luas_tanam_progress }};--size:2.2rem;--thickness:0.2rem;" aria-valuenow="{{ $luas_tanam_progress }}" role="progressbar">{{ $luas_tanam_progress }}%</div>
+                    </div></td>
                     <td>
-                        @if ($dt->status == 'diverifikasi')
-                            <div class="badge bg-[#090] text-white font-semibold rounded-sm">Terverifikasi</div>
-                        @elseif($dt->status == 'ditolak')
-                            <div class="badge text-white bg-red-600 font-semibold rounded-sm">Ditolak</div>
-                        @else
-                            <div class="badge text-black bg-[#ffc800] font-semibold rounded-sm">Belum Diverifikasi</div>
-                        @endif
-                    </td>
-                    <td>
-                        @if ($dt->status == null)
-                            <button class="btn btn-sm bg-[#070] hover:bg-[#060] text-white rounded-sm" 
-                            onclick="verifikasi('{{ route('kabupaten.dimanfaatkan.approve', Crypt::encryptString($dt->id)) }}')"
-                            >Verifikasi</button>
-                            <button class="btn btn-sm bg-red-600 hover:bg-red-700 text-white rounded-sm" 
-                            onclick="tolak('{{ route('kabupaten.dimanfaatkan.deny', Crypt::encryptString($dt->id)) }}')"
-                            >Tolak</button>
-                        @endif
-                        @if ($dt->status == null || $dt->status == 'ditolak')
-                            <button class="btn btn-sm bg-[#ffc800] hover:bg-[#eeb700] text-black rounded-sm" 
-                            onclick="editDimanfaatkan({{ $dt }}, '{{ route('kabupaten.dimanfaatkan.update', Crypt::encryptString($dt->id)) }}')"
-                            >Edit</button>
-                        @endif
+                        <div class="tooltip" data-tip="Pemanfaatan Pompa">
+                            <a href="{{ route('kabupaten.dimanfaatkan.detail', Crypt::encryptString($pom->id)) }}" class="btn btn-sm bg-[#0a0] hover:bg-[#080] text-white rounded-sm">&#10140;</a>
+                        </div>
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="8" class="text-center">Data Kosong</td></tr>
+                <tr><td colspan="10" class="text-center">Data Kosong</td></tr>
             @endforelse
         </tbody>
     </table>
@@ -147,7 +130,7 @@
     </dialog>
     <dialog id="edit_dimanfaatkan_modal" class="modal">
         <div class="modal-box">
-            <h3 class="text-lg font-bold">Edit </h3>
+            <h3 class="text-lg font-bold">Ubah </h3>
             <form action="" method="POST" id="edit_dimanfaatkan" class="py-4">
                 @csrf
                 @method('PUT')
@@ -219,6 +202,26 @@
             if (row.style.display != 'none' && row.children[0].id == 'number_row') {row.children[0].textContent = `${index}`
             index++}
         });
+    } 
+    const progressColor = (percentage) => {
+        const value = percentage
+        const red_max = 255
+        const green_max = 200
+        let red = 255
+        let green = 0
+        if (value <= 50) green += Math.round(green_max * (value*2/100))
+        else {
+            green = green_max
+            red -= Math.round(red_max * ((value-50) * 2/100))
+        }
+        return `rgb(${red}, ${green}, 0)`
+    }
+    const showPercentage = () => {
+        const element = document.querySelectorAll('#progress_percentage')
+        element.forEach(e => {
+            const value = parseInt(e.textContent.replace('%', ''))
+            e.style.color = `${progressColor(value)}`
+        })
     }
     const searchData = (e) => {
         const {value} = e
@@ -244,15 +247,6 @@
             else if (start && end && dateCellVal >= start && dateCellVal <= end) condition = true
             else condition = false
             row.style.display = condition ? '' : 'none'
-        });
-        numbering()
-    }
-    const filterStatus = (e) => {
-        const {value} = e
-        const rows = document.querySelectorAll('table tbody tr')
-        rows.forEach(row => {
-            const statusCell = row.children[9]
-            row.style.display = statusCell.textContent.includes(value) ? '' : 'none'
         });
         numbering()
     }
@@ -341,8 +335,8 @@
         document.getElementById('tolak_data_modal').showModal()
     }
 
-
     numbering()
+    showPercentage()
 </script>
 
 

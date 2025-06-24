@@ -10,15 +10,15 @@
         <div class="w-full px-5 py-2 flex flex-col gap-2 border-1 border-gray-300 rounded-lg shadow-xl">
             <div class="flex items-center w-full">
                 <label for="" class="w-52">Desa</label>
-                <div class="w-full font-semibold">: {{ $diterima->pompa_usulan->desa->name }}</div>
+                <div class="w-full font-semibold">: {{ $pompa->desa->name }}</div>
             </div>
             <div class="flex items-center w-full">
                 <label for="" class="w-52">Kelompok Tani</label>
-                <div class="w-full font-semibold">: {{ $diterima->pompa_usulan->poktan->name }}</div>
+                <div class="w-full font-semibold">: {{ $pompa->poktan->name }}</div>
             </div>
             <div class="flex items-center w-full">
                 <label for="" class="w-52">Luas Lahan</label>
-                <div class="w-full font-semibold">: {{ $diterima->pompa_usulan->luas_lahan }} Ha</div>
+                <div class="w-full font-semibold">: {{ $pompa->luas_lahan }} Ha</div>
             </div>
             <div class="flex items-center w-full">
                 <label for="" class="w-52">Total Luas Tanam</label>
@@ -26,15 +26,15 @@
             </div>
             <div class="flex items-center w-full">
                 <label for="" class="w-52">Total Unit Diusulkan</label>
-                <div class="w-full font-semibold">: {{ $diterima->pompa_usulan->total_unit }}</div>
+                <div class="w-full font-semibold">: {{ $pompa->diusulkan_unit }}</div>
             </div>
             <div class="flex items-center w-full">
                 <label for="" class="w-52">Total Unit Diterima</label>
-                <div class="w-full font-semibold">: {{ $diterima->total_unit }}</div>
+                <div class="w-full font-semibold">: {{ $pompa->diterima_unit }}</div>
             </div>
             <div class="flex items-center w-full">
                 <label for="" class="w-52">Total Unit Dimanfaatkan</label>
-                <div class="w-full font-semibold">: 0</div>
+                <div class="w-full font-semibold">: {{ $pompa->dimanfaatkan_unit }}</div>
             </div>
         </div>
     </div>
@@ -68,7 +68,7 @@
 
 <dialog id="add_dimanfaatkan_modal" class="modal">
     <div class="modal-box">
-        <h3 class="text-lg font-bold">Edit </h3>
+        <h3 class="text-lg font-bold">Ubah </h3>
         <form action="" method="POST" id="add_dimanfaatkan" class="py-4">
             @csrf
             @method('PUT')

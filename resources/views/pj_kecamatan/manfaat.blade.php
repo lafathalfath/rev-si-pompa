@@ -74,7 +74,7 @@
                     <td>
                             <a class="btn btn-sm bg-[#ffc800] hover:bg-[#eeb700] text-black rounded-sm" 
                             href="/manfaat_pengisiandata"
-                            >Edit</a>
+                            >Ubah</a>
                             <button class="btn btn-sm bg-red-600 hover:bg-red-700 text-white rounded-sm" >Hapus</button>
                     </td>
                 </tr>
@@ -121,7 +121,7 @@
     </dialog>
     <dialog id="edit_dimanfaatkan_modal" class="modal">
         <div class="modal-box">
-            <h3 class="text-lg font-bold">Edit </h3>
+            <h3 class="text-lg font-bold">Ubah </h3>
             <form action="" method="POST" id="edit_dimanfaatkan" class="py-4">
                 {{-- @csrf
                 @method('PUT') --}}

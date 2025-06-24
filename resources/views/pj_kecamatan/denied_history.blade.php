@@ -1,15 +1,16 @@
 @extends('layouts.authenticated')
-@section('title')| Luas Tanam Harian @endsection
+@section('title')| Pompa Ditolak @endsection
+
 @section('content')
     
 <div>
-    <div class="text-xl font-bold">Data Luas Tanam Harian</div>
+    <div class="text-xl font-bold">Data Pompa Ditolak</div>
     
     <div class="mt-5 mb-1 flex justify-between items-center">
         <div class="">
             <div>
-                <label for="search_luas_tanam">Cari data pompa diterima</label><br>
-                <input type="search" id="search_luas_tanam" oninput="searchData(this)" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400">
+                <label for="search_ditolak">Cari data pompa ditolak</label><br>
+                <input type="search" id="search_ditolak" oninput="searchData(this)" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400">
             </div>
             <div class="mt-1 flex items-center gap-2">
                 <div class="">
@@ -17,15 +18,6 @@
                     <input type="date" id="filter_date_start" class="py-1 rounded-sm border-1 border-gray-400" oninput="filterDate()">
                     s/d
                     <input type="date" id="filter_date_end" class="py-1 rounded-sm border-1 border-gray-400" oninput="filterDate()">
-                </div>
-                <div>
-                    <label for="filter_status">Status: </label>
-                    <select id="filter_status" oninput="filterStatus(this)" class="py-1 px-2 rounded-sm border-1 border-gray-400">
-                        <option value="" selected>Semua</option>
-                        <option value="Belum Diverifikasi">Belum Diverifikasi</option>
-                        <option value="Terverifikasi">Terverifikasi</option>
-                        <option value="Ditolak">Ditolak</option>
-                    </select>
                 </div>
                 <div>
                     <label for="filter_desa">Desa: </label>
@@ -39,7 +31,6 @@
                 <a href="" class="btn btn-sm text-white bg-gray-500 hover:bg-gray-600">Bersihkan</a>
             </div>
         </div>
-        <div class="flex justify-end"><a href="{{ route('kecamatan.luas_tanam.create') }}" class="btn rounded-sm text-white bg-[#070] hover:bg-[#060]">+ Tambah Data</a></div>
     </div>
     <table class="w-full">
         <thead>
@@ -49,44 +40,23 @@
                 <th>Kelompok Tani</th>
                 <th>Desa</th>
                 <th>Luas Lahan (Ha)</th>
-                <th>Luas Tanam (Ha)</th>
-                <th>Status</th>
-                <th>Aksi</th>
+                <th>Total Usulan</th>
             </tr>
         </thead>
         <tbody>
-            @forelse ($luas_tanam as $lt)
+            @forelse ($pompa as $pom)
                 <tr>
                     <td id="number_row"></td>
-                    <td>{{ $lt->created_at }}</td>
+                    <td>{{ $pom->created_at }}</td>
                     <td class="flex items-center justify-between">
-                        <div>{{ $lt->pompa_diterima->pompa_usulan->poktan->name }}</div>
+                        <div>{{ $pom->poktan->name }}</div>
                         <button type="button" class="btn btn-sm bg-[#0bf] hover:bg-[#0ae] text-black rounded-sm" 
-                            onclick="detailPoktan('{{ $api_token }}', '{{ $lt->pompa_diterima->pompa_usulan->poktan->name }}')"
+                            onclick="detailPoktan('{{ session('api_token') }}', '{{ $pom->poktan->name }}')"
                         >Detail</button>
                     </td>
-                    <td>{{ $lt->pompa_diterima->pompa_usulan->desa->name }}</td>
-                    <td>{{ $lt->pompa_diterima->pompa_usulan->luas_lahan }}</td>
-                    <td>{{ $lt->luas_tanam }}</td>
-                    <td>
-                        @if ($lt->status == 'diverifikasi')
-                            <div class="badge bg-[#090] text-white font-semibold rounded-sm">Terverifikasi</div>
-                        @elseif($lt->status == 'ditolak')
-                            <div class="badge text-white bg-red-600 font-semibold rounded-sm">Ditolak</div>
-                        @else
-                            <div class="badge text-black bg-[#ffc800] font-semibold rounded-sm">Belum Diverifikasi</div>
-                        @endif
-                    </td>
-                    <td>
-                        @if ($lt->status != 'diverifikasi')
-                            <button class="btn btn-sm bg-[#ffc800] hover:bg-[#eeb700] text-black rounded-sm" 
-                                onclick="editDiterima({{ $lt }}, '{{ route('kecamatan.luas_tanam.update', Crypt::encryptString($lt->id)) }}')"
-                            >Ubah</button>
-                            <button class="btn btn-sm bg-red-600 hover:bg-red-700 text-white rounded-sm" 
-                                onclick="deleteDiterima('{{ route('kecamatan.luas_tanam.destroy', Crypt::encryptString($lt->id)) }}')"
-                            >Hapus</button>
-                        @endif
-                    </td>
+                    <td>{{ $pom->desa->name }}</td>
+                    <td>{{ $pom->luas_lahan }}</td>
+                    <td>{{ $pom->diusulkan_unit }}</td>
                 </tr>
             @empty
                 <tr><td colspan="8" class="text-center">Data Kosong</td></tr>
@@ -129,57 +99,6 @@
         </div>
         <form method="dialog" class="modal-backdrop"><button>close</button></form>
     </dialog>
-    <dialog id="edit_luas_tanam_modal" class="modal">
-        <div class="modal-box">
-            <h3 class="text-lg font-bold">Ubah </h3>
-            <form action="" method="POST" id="edit_luas_tanam" class="py-4">
-                @csrf
-                @method('PUT')
-                <div class="flex flex-wrap gap-2">
-                    <div class="flex flex-col py-1">
-                        <label class="text-semibold">Desa</label>
-                        <input type="text" id="edit_luas_tanam_desa" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" readonly disabled>
-                    </div>
-                </div>
-                <div class="flex flex-wrap gap-2">
-                    <div class="flex flex-col py-1">
-                        <label class="text-semibold">Kelompok Tani</label>
-                        <input type="text" id="edit_luas_tanam_poktan" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" readonly disabled>
-                    </div>
-                </div>
-                <div class="flex flex-wrap gap-2">
-                    <div class="flex flex-col py-1">
-                        <label class="text-semibold">Luas Lahan (Ha)</label>
-                        <input type="text" id="edit_luas_tanam_luas_lahan" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" readonly disabled>
-                    </div>
-                </div>
-                <div class="flex flex-wrap gap-2">
-                    <div class="flex flex-col py-1">
-                        <label class="text-semibold">Total Unit Diterima</label>
-                        <input type="text" id="edit_luas_tanam_diterima_total_unit" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" readonly disabled>
-                    </div>
-                </div>
-                <div class="flex flex-col py-1">
-                    <label for="luas_tanam" class="text-semibold">Luas Tanam (Ha) </label>
-                    <input type="number" id="edit_luas_tanam_luas" min="0" name="luas_tanam" id="luas_tanam" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" required>
-                </div>
-            </form>
-            <div class="modal-action"><button class="btn bg-[#ffc800] hover:bg-[#eeb700] text-black rounded-sm" onclick="edit_luas_tanam.submit()">Perbarui</button><form method="dialog"><button class="btn" onclick="closeEdit()">Tutup</button></form></div>
-        </div>
-        <form method="dialog" class="modal-backdrop"><button>close</button></form>
-    </dialog>
-    <dialog id="delete_luas_tanam_modal" class="modal">
-        <div class="modal-box">
-            <h3 class="text-lg font-bold">Konfirmasi</h3>
-            <form action="" method="POST" id="delete_luas_tanam" class="py-4">
-                @csrf
-                @method('DELETE')
-                Apakah Anda yakin ingin menghapus data Luas Tanam Harian ini?
-            </form>
-            <div class="modal-action"><button class="btn bg-red-600 hover:bg-red-700 text-white" onclick="delete_luas_tanam.submit()">Hapus</button><form method="dialog"><button class="btn">Batal</button></form></div>
-        </div>
-        <form method="dialog" class="modal-backdrop"><button>close</button></form>
-    </dialog>
 
 </div>
 
@@ -216,15 +135,6 @@
             else if (start && end && dateCellVal >= start && dateCellVal <= end) condition = true
             else condition = false
             row.style.display = condition ? '' : 'none'
-        });
-        numbering()
-    }
-    const filterStatus = (e) => {
-        const {value} = e
-        const rows = document.querySelectorAll('table tbody tr')
-        rows.forEach(row => {
-            const statusCell = row.children[6]
-            row.style.display = statusCell.textContent.includes(value) ? '' : 'none'
         });
         numbering()
     }
@@ -269,20 +179,6 @@
         const container = document.getElementById('detail_poktan_bukti')
         container.style.display = container.style.display == 'flex' ? 'none' : 'flex'
         e.innerHTML = e.innerHTML == 'Lihat Bukti Kepemilikan Lahan' ? 'Tutup Bukti Kepemilikan Lahan' : 'Lihat Bukti Kepemilikan Lahan'
-    }
-    const editDiterima = (data, route) => {
-        document.getElementById('edit_luas_tanam_desa').value = data?.pompa_diterima?.pompa_usulan?.desa?.name
-        document.getElementById('edit_luas_tanam_poktan').value = data?.pompa_diterima?.pompa_usulan?.poktan?.name
-        document.getElementById('edit_luas_tanam_luas_lahan').value = data?.pompa_diterima?.pompa_usulan?.luas_lahan
-        document.getElementById('edit_luas_tanam_diterima_total_unit').value = data?.pompa_diterima?.total_unit
-        document.getElementById('edit_luas_tanam_luas').max = data?.pompa_diterima?.pompa_usulan?.luas_lahan
-        document.getElementById('edit_luas_tanam_luas').value = data?.luas_tanam
-        document.getElementById('edit_luas_tanam').action = route
-        document.getElementById('edit_luas_tanam_modal').showModal()
-    }
-    const deleteDiterima = (route) => {
-        document.getElementById('delete_luas_tanam').action = route
-        document.getElementById('delete_luas_tanam_modal').showModal()
     }
 
 

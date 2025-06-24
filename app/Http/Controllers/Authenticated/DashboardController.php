@@ -52,7 +52,7 @@ class DashboardController extends Controller
         ];
         $updated = $user->update($update_data);
         if (!$updated) return back()->withErrors('Terjadi Kesalahan');
-        return redirect()->route('dashboard')->with('success', 'Aktifasi berhasil');
+        return redirect()->route('dashboard')->with('success', 'Aktivasi berhasil');
     }
 
 }

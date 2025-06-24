@@ -28,7 +28,7 @@ class Desa extends Model
         return $this->hasMany(Poktan::class, 'desa_id', 'id');
     }
 
-    public function pompa_usulan(): HasMany {
-        return $this->hasMany(PompaUsulan::class, 'desa_id', 'id');
+    public function pompa(): HasMany {
+        return $this->hasMany(Pompa::class, 'desa_id', 'id');
     }
 }

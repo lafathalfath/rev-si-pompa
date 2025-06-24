@@ -4,30 +4,32 @@ namespace App\Http\Controllers\PjKabupaten;
 
 use App\Http\Controllers\Controller;
 use App\Models\Desa;
-use App\Models\PompaUsulan;
+use App\Models\Notification;
+use App\Models\NotificationLink;
+use App\Models\Pompa;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
-use Illuminate\Support\Facades\Date;
 
 class KabupatenPompaUsulanController extends Controller
 {
-    public function index() {
+    public function index(Request $request) {
         $user = Auth::user();
         $token = User::find($user->id)->createToken($user->name);
         $token = str_replace($token->accessToken->id.'|', '', $token->plainTextToken);
-        $kecamatan_id = $user->region->kecamatan->pluck('id');
+        $kecamatan_id = $user->region->kecamatan->pluck('id')->unique();
         $desa_id = Desa::whereIn('kecamatan_id', $kecamatan_id)
             ->select('id')
             ->distinct()
-            ->pluck('id');
-        $usulan = PompaUsulan::whereIn('desa_id', $desa_id)
-            ->orderByDesc('created_at')
-            ->get();
+            ->pluck('id')->unique();
+        $pompa = [];
+        $pompa = Pompa::whereIn('desa_id', $desa_id)->where('status_id', 1);
+        if ($request->src) $pompa = $pompa->where('id', Crypt::decryptString($request->src));
+        $pompa = $pompa->orderByDesc('created_at')->get();
         $kecamatan = $user->region->kecamatan->select('id', 'name');
         return view('pj_kabupaten.pompa_usulan', [
-            'usulan' => $usulan,
+            'pompa' => $pompa,
             'kecamatan' => $kecamatan,
             'api_token' => $token
         ]);
@@ -35,44 +37,67 @@ class KabupatenPompaUsulanController extends Controller
 
     public function update($id, Request $request) {
         $user = Auth::user();
-        $usulan = PompaUsulan::find(Crypt::decryptString($id));
-        if (!$usulan) return back()->withErrors('Data tidak ditemukan');
-        if ($usulan->status == 'diverifikasi') return back()->withErrors('data yang telah diverifikasi tidak dapat diubah');
+        $pompa = Pompa::find(Crypt::decryptString($id));
+        if (!$pompa) return back()->withErrors('Data tidak ditemukan');
+        if ($pompa->status == 'diverifikasi') return back()->withErrors('data yang telah diverifikasi tidak dapat diubah');
         $request->validate([
             'luas_lahan' => 'required|numeric',
-            'total_unit' => 'required|numeric|min:1'
+            'diusulkan_unit' => 'required|numeric|min:1'
         ], [
             'luas_lahan.required' => 'Luas lahan tidak boleh kosong',
-            'total_unit.required' => 'Total unit tidak boleh kosong',
-            'total_unit.min' => 'Total unit tidak boleh kosong'
+            'diusulkan_unit.required' => 'Jumlah pompa diusulkan tidak boleh kosong',
+            'diusulkan_unit.min' => 'Total unit tidak boleh kosong'
         ]);
         $data = [
             'luas_lahan' => $request->luas_lahan,
-            'total_unit' => $request->total_unit,
+            'diusulkan_unit' => $request->diusulkan_unit,
             'updated_by' => $user->id
         ];
-        if (!$usulan->update($data)) return back()->withErrors('terjadi kesalahan');
+        if (!$pompa->update($data)) return back()->withErrors('terjadi kesalahan');
         return back()->with('success', 'data berhasil diperbarui');
     }
 
-    public function approve($id) {
-        $usulan = PompaUsulan::find(Crypt::decryptString($id));
-        if (!$usulan) return back()->withErrors('Data tidak ditemukan');
-        if ($usulan->status != null) return back()->withErrors('status sudah diperbarui');
-        $update = $usulan->update([
-            'verified_at' => Date::now(),
-            'status' => 'diverifikasi'
+    public function approve($id, Request $request) {
+        $pompa = Pompa::find(Crypt::decryptString($id));
+        if (!$pompa) return back()->withErrors('Data tidak ditemukan');
+        if ($pompa->status_id != 1) return back()->withErrors('status sudah diperbarui');
+        $request->validate([
+            'diterima_unit' => 'required|min:1'
+        ], [
+            'diterima_unit.required' => 'jumlah pompa diterima tidak boleh kosong',
+            'diterima_unit.min' => 'jumlah pompa diterima tidak boleh kurang dari 1',
+        ]);
+        $update = $pompa->update([
+            'diterima_unit' => $request->diterima_unit,
+            'status_id' => 3
         ]);
         if (!$update) return back()->withErrors('terjadi kesalahan');
         return back()->with('success', 'data berhasil diverifikasi');
     }
 
     public function deny($id) {
-        $usulan = PompaUsulan::find(Crypt::decryptString($id));
-        if (!$usulan) return back()->withErrors('Data tidak ditemukan');
-        if ($usulan->status != null) return back()->withErrors('status sudah diperbarui');
-        $update = $usulan->update([
-            'status' => 'ditolak'
+        $user = Auth::user();
+        $pompa = Pompa::find(Crypt::decryptString($id));
+        if (!$pompa) return back()->withErrors('Data tidak ditemukan');
+        if ($pompa->status_id != 1) return back()->withErrors('status sudah diperbarui');
+        $notification_data = [
+            'sender_id' => $user->id,
+            'receiver_id' => $pompa->created_by,
+            'subject' => 'Usulan Ditolak',
+            'title' => 'Usulan Pompa Kelompok Tani '. $pompa->poktan->name,
+            'message' => "Penanggung Jawab Kabupaten ". $user->region->name ." menolak usulan pompa untuk kelompok tani ". $pompa->poktan->name ." di desa ". $pompa->desa->name ."."
+        ];
+        $notification = Notification::create($notification_data);
+        $link = [
+            'notification_id' => $notification->id,
+            'name' => 'buka halaman pompa ditolak',
+            // 'url' => route('kabupaten.usulan', ['src' => Crypt::encryptString($pompa->id)])
+            'url' => route('kecamatan.history.denied', ['src' => Crypt::encryptString($pompa->id)])
+        ];
+        NotificationLink::create($link);
+        $update = $pompa->update([
+            'status_id' => 2,
+            'updated_by' => $user->id
         ]);
         if (!$update) return back()->withErrors('terjadi kesalahan');
         return back()->with('success', 'data berhasil ditolak');

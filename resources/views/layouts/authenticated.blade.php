@@ -55,14 +55,16 @@
                         @if ($role == 'pj_kabupaten')
                             <a href="{{ route('kabupaten.usulan') }}" class="nav-link {{ str_starts_with(request()->url(), route('kabupaten.usulan')) ? 'active' : '' }}">Pompa Usulan</a>
                             <a href="{{ route('kabupaten.diterima') }}" class="nav-link {{ request()->url() == route('kabupaten.diterima') ? 'active' : '' }}">Pompa Diterima</a>
-                            <a href="{{ route('kabupaten.dimanfaatkan') }}" class="nav-link {{ request()->url() == route('kabupaten.dimanfaatkan') ? 'active' : '' }}">Pompa Dimanfaatkan</a>
-                            <a href="{{ route('kabupaten.luas_tanam') }}" class="nav-link {{ request()->url() == route('kabupaten.luas_tanam') ? 'active' : '' }}">Luas Tanam Harian</a>
+                            <a href="{{ route('kabupaten.dimanfaatkan') }}" class="nav-link {{ str_starts_with(request()->url(), route('kabupaten.dimanfaatkan')) ? 'active' : '' }}">Pompa Dimanfaatkan</a>
+                            <a href="{{ route('kabupaten.history.verified') }}" class="nav-link {{ str_starts_with(request()->url(), route('kabupaten.history.verified')) ? 'active' : '' }}">Pompa Diverifikasi</a>
+                            <a href="{{ route('kabupaten.history.denied') }}" class="nav-link {{ str_starts_with(request()->url(), route('kabupaten.history.denied')) ? 'active' : '' }}">Pompa Ditolak</a>
                         @endif
                         @if ($role == 'pj_kecamatan')
-                            <a href="{{ route('kecamatan.usulan') }}" class="nav-link {{ request()->url() == route('kecamatan.usulan') ? 'active' : '' }}">Pompa Usulan</a>
+                            <a href="{{ route('kecamatan.usulan') }}" class="nav-link {{ str_starts_with(request()->url(), route('kecamatan.usulan')) ? 'active' : '' }}">Pompa Usulan</a>
                             <a href="{{ route('kecamatan.diterima') }}" class="nav-link {{ request()->url() == route('kecamatan.diterima') ? 'active' : '' }}">Pompa Diterima</a>
-                            <a href="{{ route('kecamatan.dimanfaatkan') }}" class="nav-link {{ request()->url() == route('kecamatan.dimanfaatkan') ? 'active' : '' }}">Pompa Dimanfaatkan</a>
-                            <a href="{{ route('kecamatan.luas_tanam') }}" class="nav-link {{ request()->url() == route('kecamatan.luas_tanam') ? 'active' : '' }}">Luas Tanam Harian</a>
+                            <a href="{{ route('kecamatan.dimanfaatkan') }}" class="nav-link {{ str_starts_with(request()->url(), route('kecamatan.dimanfaatkan')) ? 'active' : '' }}">Pompa Dimanfaatkan</a>
+                            <a href="{{ route('kecamatan.history.verified') }}" class="nav-link {{ str_starts_with(request()->url(), route('kecamatan.history.verified')) ? 'active' : '' }}">Pompa Diverifikasi</a>
+                            <a href="{{ route('kecamatan.history.denied') }}" class="nav-link {{ str_starts_with(request()->url(), route('kecamatan.history.denied')) ? 'active' : '' }}">Pompa Ditolak</a>
                         @endif
                     </div>
                 </div>
@@ -77,7 +79,7 @@
                 <div class="w-full p-3 bg-orange-400 text-white rounded-sm flex items-center justify-between">
                     <div class="capitalize"><span class="text-black bg-white py-1 px-3 rounded-sm font-semibold">{{ $user->name }}</span>&ensp;{{ str_replace('_', ' ', $role) }}{{ $user->region ? " | ".$user->region->name : '' }}</div>
                     <div>
-                        <a href="{{ route('auth.logout') }}" class="btn text-white bg-red-500 border-none shadow-none hover:bg-red-600">Logout</a>
+                        <button onclick="logout_modal.showModal()" class="btn text-white bg-red-500 border-none shadow-none hover:bg-red-600">Logout</button>
                     </div>
                 </div>
             </div>
@@ -106,17 +108,24 @@
             <div>
                 <h3 class="text-lg font-bold">Notifikasi</h3>
             </div>
-            <div class="flex flex-col gap-2 w-full mt-3" id="notification_list">
-                <div id="notification_items" class="w-full bg-[#0703] hover:bg-[#0603] py-1 px-3">
-                    <div class="m-0 p-0 text-xs flex items-center justify-end gap-1">
-                        <button class="text-[#060] hover:text-[#070] cursor-pointer">buat sudah dibaca</button>
-                        |
-                        <button class="text-red-600 hover:text-red-700 cursor-pointer">hapus</button>
-                    </div>
-                    <div class="text-md font-bold">[SUB] Subject Placeholder</div>
-                    <div class="w-full">Title</div>
-                    <div class="m-0 p-0 text-xs text-end text-gray-500">d M 00:00</div>
-                </div>
+            <div class="flex flex-col gap-2 w-full max-h-[75dvh] overflow-y-scroll mt-3" id="notification_list"></div>
+            <div class="modal-action">
+                <form method="dialog"><button class="btn">Tutup</button></form>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
+
+    <dialog id="notification_detail_modal" class="modal">
+        <div class="modal-box">
+            <div>
+                <h3 class="text-lg font-bold" id="notification_detail_title"></h3>
+            </div>
+            <div class="flex flex-col gap-2 w-full max-h-[75dvh] overflow-y-scroll mt-3">
+                <div id="notification_detail_message"></div>
+                <br>
+                <div class="font-semibold">Tautan terkait:</div>
+                <lu id="notification_detail_links"></lu>
             </div>
             <div class="modal-action">
                 <form method="dialog"><button class="btn">Tutup</button></form>
@@ -125,8 +134,19 @@
         <form method="dialog" class="modal-backdrop"><button>close</button></form>
     </dialog>
 
+    <dialog id="logout_modal" class="modal">
+        <div class="modal-box">
+            <h3 class="text-lg font-bold">Konfirmasi</h3>
+            <div id="logout" class="py-4">
+                Apakah Anda yakin ingin keluar dari aplikasi?
+            </div>
+            <div class="modal-action"><a href="{{ route('auth.logout') }}" class="btn bg-red-600 hover:bg-red-700 text-white" onclick="delete_dimanfaatkan.submit()">Ya</a><form method="dialog"><button class="btn">Tidak</button></form></div>
+        </div>
+        <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
+
     <script>
-        const apiToken = @json(session('api_token'))
+        const apiToken = @json(session('api_token'));
 
         const toggleMinimizeSidebar = () => {
             const sidebar = document.getElementById('sidebar')
@@ -146,8 +166,7 @@
                 })
                 const data = await response.json()
                 if (!data) return
-                console.log(data)
-                document.getElementById('unreaded_notification_dot').style.display = data.has_any_read > 0 ? '' : 'none'
+                document.getElementById('unreaded_notification_dot').style.display = data.has_any_unread ? '' : 'none'
                 if (data.notifications) {
                     const {notifications} = data
                     const notificationElementList = document.getElementById('notification_list')
@@ -158,16 +177,39 @@
                                 <div class="m-0 p-0 text-xs flex justify-end">
                                     ${notif.is_read ?
                                     '<button class="text-red-600 hover:text-red-700 cursor-pointer">hapus</button>'
-                                    : '<button class="text-[#060] hover:text-[#070] cursor-pointer">buat sudah dibaca</button>'}
+                                    : '<button class="text-[#060] hover:text-[#070] cursor-pointer">tandai sudah dibaca</button>'}
                                 </div>
-                                <div class="text-md font-bold">${notif.subject}</div>
-                                <div class="w-full">${notif.title}</div>
-                                <div class="m-0 p-0 text-xs text-end text-gray-500">${notif.created_at}</div>
+                                <button class="hover:underline text-start cursor-pointer" onclick="showDetailNotification(${notif.id})">
+                                    <div class="text-md font-bold">${notif.subject}</div>
+                                    <div class="w-full">${notif.title}</div>
+                                </button>
+                                <div class="m-0 p-0 text-xs text-end text-gray-500">${new Date(notif.created_at).toUTCString().replace(' GMT', '')}</div>
                             </div>
                         `
                     });
                     notificationElementList.innerHTML = notificationItems
                 }
+            } catch (err) {
+                console.error(err.message)
+            }
+        }
+
+        const showDetailNotification = async (id) => {
+            try {
+                const response = await fetch(`/api/notification/${id}`, {
+                    headers: {"Authorization": `Bearer ${apiToken}`}
+                })
+                const data = await response.json()
+                if (!data) return
+                console.log(data)
+                document.getElementById('notification_detail_modal').showModal()
+                document.getElementById('notification_detail_title').innerHTML = `[${data.subject}] ${data.title}`
+                document.getElementById('notification_detail_message').innerHTML = `${data.message}`
+                let links = ''
+                data.links.forEach(link => {
+                    links += `<li><a href="${link.url}" class="text-blue-600 hover:text-violet-600">${link.name}</a></li>`
+                });
+                document.getElementById('notification_detail_links').innerHTML = links
             } catch (err) {
                 console.error(err.message)
             }

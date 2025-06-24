@@ -53,7 +53,7 @@ class PoktanController extends Controller
                 'created_by' => $user->id
             ];
         }
-        if (Document::insert($bukti_kepemilikan)) $bukti_kepemilikan = Document::select('id')->whereIn('url', $bukti_urls)->distinct()->pluck('id');
+        if (Document::insert($bukti_kepemilikan)) $bukti_kepemilikan = Document::select('id')->whereIn('url', $bukti_urls)->distinct()->pluck('id')->unique();
         $poktan = [
                 'name' => $request->name,
                 'phone_number' => $request->phone_number,
