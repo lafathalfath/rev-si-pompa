@@ -30,8 +30,9 @@ class APINotificationController extends Controller
 
     public function get($id) {
         $notification = Notification::find($id);
-        $notification->links = $notification->links;
         if (!$notification) return error('notifikasi tidak ditemukan');
+        $notification->update(['is_read' => true]);
+        $notification->links = $notification->links;
         return response()->json($notification);
     }
 
@@ -66,16 +67,17 @@ class APINotificationController extends Controller
     }
 
     public function read($id) {
-        $notification = Notification::find(Crypt::decryptString($id));
+        $notification = Notification::find($id);
         if (!$notification) return error('notifikasi tidak ditemukan');
         $notification->update(['is_read' => true]);
         return response()->json(['message' => 'notifikasi telah dibaca']);
     }
 
     public function delete($id) {
-        $notification = Notification::find(Crypt::decryptString($id));
+        $notification = Notification::find($id);
         if (!$notification) return error('notifikasi tidak ditemukan');
-        $notification->update(['is_deleted' => true]);
+        // $notification->update(['is_deleted' => true]);
+        $notification->delete();
         return response()->json(['message' => 'notifikasi berhasil dihapus']);
     }
 

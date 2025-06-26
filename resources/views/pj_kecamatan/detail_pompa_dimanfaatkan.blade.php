@@ -124,7 +124,7 @@
             </div>
             <span class="text-red-600 text-sm">*) wajib diisi</span>
         </form>
-        <div class="modal-action"><button class="btn bg-[#070] hover:bg-[#060] text-white rounded-sm" onclick="confirmAdd()">Kirim</button><form method="dialog"><button class="btn" onclick="closeAddModal()">Tutup</button></form></div>
+        <div class="modal-action"><button class="btn bg-[#070] hover:bg-[#060] text-white rounded-sm" onclick="confirmAdd({{ $pompa }})">Kirim</button><form method="dialog"><button class="btn" onclick="closeAddModal()">Tutup</button></form></div>
     </div>
     <form method="dialog" class="modal-backdrop"><button>close</button></form>
 </dialog>
@@ -236,19 +236,25 @@
         const alert = `<div role="alert" class="alert alert-error"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><div><lu>${messageList}</lu></div></div>`
         container.innerHTML += alert
     }
-    const confirmAdd = () => {
+    const confirmAdd = (pompa) => {
         const unit = document.getElementById('add_dimanfaatkan_total_unit').value
-        const luasLahan = document.getElementById('add_dimanfaatkan_luas_tanam').value
+        const luasTanam = document.getElementById('add_dimanfaatkan_luas_tanam').value
         const bukti = document.getElementById('add_dimanfaatkan_bukti').files.length
         let anyErrors = false
         let errors = []
         if (unit == 0 || unit == '' || unit == null) {
             anyErrors = true
             errors.push('Jumlah pemanfaatan pompa tidak boleh kosong')
-        }
-        if (luasLahan == 0 || luasLahan == '' || luasLahan == null) {
+        } else if (pompa.diterima_unit - pompa.dimanfaatkan_unit < unit) {
             anyErrors = true
-            errors.push('Luas lahan diusulkan tidak boleh kosong')
+            errors.push('Jumlah pemanfaatan pompa tidak boleh lebih dari pompa diterima')
+        }
+        if (luasTanam == 0 || luasTanam == '' || luasTanam == null) {
+            anyErrors = true
+            errors.push('Luas tanam tidak boleh kosong')
+        } else if (pompa.luas_lahan - pompa.total_tanam < luasTanam) {
+            anyErrors = true
+            errors.push('Jumlah luas tanam diisi tidak boleh lebih dari luas lahan')
         }
         if (bukti == 0) {
             anyErrors = true

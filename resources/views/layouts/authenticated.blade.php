@@ -128,6 +128,7 @@
                 <lu id="notification_detail_links"></lu>
             </div>
             <div class="modal-action">
+                <form method="dialog"><button class="btn text-white bg-red-600 hover:bg-red-700" id="delete_notification">Hapus</button></form>
                 <form method="dialog"><button class="btn">Tutup</button></form>
             </div>
         </div>
@@ -173,11 +174,11 @@
                     let notificationItems = ''
                     notifications.forEach(notif => {
                         notificationItems += `
-                            <div id="notification_items" class="w-full ${notif.is_read ? 'hover:bg-gray-200' : 'bg-[#0703] hover:bg-[#0603]'} py-1 px-3">
-                                <div class="m-0 p-0 text-xs flex justify-end">
+                            <div id="notification_item_${notif.id}" class="w-full ${notif.is_read ? 'hover:bg-gray-200' : 'bg-[#0703] hover:bg-[#0603]'} py-1 px-3">
+                                <div id="notification_item_action_${notif.id}" class="m-0 p-0 text-xs flex justify-end">
                                     ${notif.is_read ?
-                                    '<button class="text-red-600 hover:text-red-700 cursor-pointer">hapus</button>'
-                                    : '<button class="text-[#060] hover:text-[#070] cursor-pointer">tandai sudah dibaca</button>'}
+                                    `<button class="text-red-600 hover:text-red-700 cursor-pointer" onclick="deleteNotification(${notif.id})">hapus</button>`
+                                    : `<button class="text-[#060] hover:text-[#070] cursor-pointer" onclick="markAsReadNotification(${notif.id})">tandai sudah dibaca</button>`}
                                 </div>
                                 <button class="hover:underline text-start cursor-pointer" onclick="showDetailNotification(${notif.id})">
                                     <div class="text-md font-bold">${notif.subject}</div>
@@ -193,7 +194,36 @@
                 console.error(err.message)
             }
         }
-
+        const deleteNotification = async (id) => {
+            try {
+                const response = await fetch(`/api/notification/${id}/delete`, {
+                    method: "DELETE",
+                    headers: {"Authorization": `Bearer ${apiToken}`}
+                })
+                const data = await response.json()
+                if (!data) return
+                document.getElementById(`notification_item_${id}`).style.display = 'none'
+            } catch (err) {
+                console.error(err.message)
+            }
+        }
+        const markAsReadNotification = async (id) => {
+            try {
+                const response = await fetch(`/api/notification/${id}/mark-as-read`, {
+                    method: "PUT",
+                    headers: {"Authorization": `Bearer ${apiToken}`}
+                })
+                const data = await response.json()
+                if (!data) return
+                const notifItem = document.getElementById(`notification_item_${id}`)
+                notifItem.classList.remove('bg-[#0703]')
+                notifItem.classList.remove('hover:bg-[#0603]')
+                notifItem.classList.add('hover:bg-gray-200')
+                document.getElementById(`notification_item_action_${id}`).innerHTML = `<button class="text-red-600 hover:text-red-700 cursor-pointer">hapus</button>`
+            } catch (err) {
+                console.error(err.message)
+            }
+        }
         const showDetailNotification = async (id) => {
             try {
                 const response = await fetch(`/api/notification/${id}`, {
@@ -201,10 +231,17 @@
                 })
                 const data = await response.json()
                 if (!data) return
-                console.log(data)
                 document.getElementById('notification_detail_modal').showModal()
                 document.getElementById('notification_detail_title').innerHTML = `[${data.subject}] ${data.title}`
                 document.getElementById('notification_detail_message').innerHTML = `${data.message}`
+                document.getElementById('delete_notification').onclick = () => deleteNotification(id)
+
+                const notifItem = document.getElementById(`notification_item_${id}`)
+                notifItem.classList.remove('bg-[#0703]')
+                notifItem.classList.remove('hover:bg-[#0603]')
+                notifItem.classList.add('hover:bg-gray-200')
+                document.getElementById(`notification_item_action_${id}`).innerHTML = `<button class="text-red-600 hover:text-red-700 cursor-pointer">hapus</button>`
+
                 let links = ''
                 data.links.forEach(link => {
                     links += `<li><a href="${link.url}" class="text-blue-600 hover:text-violet-600">${link.name}</a></li>`

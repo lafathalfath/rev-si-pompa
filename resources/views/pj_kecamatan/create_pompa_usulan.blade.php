@@ -2,27 +2,56 @@
 @section('title')| Tambah Pompa Usulan @endsection
 @section('content')
 <style>
+    .step-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .step-point {
+        width: 25px;
+        height: 25px;
+        border-radius: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #ddd;
+    }
+    .step-point-active {
+        color: white;
+        background-color: #070;
+    }
 </style>
 
 <div id="alert-container" class="flex flex-col gap-1 w-full"></div>
 
 <div>
     <div class="text-xl font-bold mb-10">Tambah Data Pompa Diusulkan</div>
+    {{-- <div class="w-1/2 h-2 bg-[#ddd] absolute left-1/4 top-1/6"><div class="{{ request()->poktan ? 'w-full' : 'w-1/2' }} h-2 bg-[#070]"></div></div> --}}
+    <div class="relative flex flex-column justify-center">
+        <div class="w-1/2 h-2 bg-[#ddd] absolute left-1/4 top-1/6"><div class="{{ request()->poktan ? 'w-full' : 'w-1/2' }} h-2 bg-[#070]"></div></div>
+        <div class="w-full flex items-center justify-around z-10">
+            <div class="step-item">
+                <div class="step-point step-point-active">1</div>
+                <div class="text-xs">Pilih Kelompok Tani</div>
+            </div>
+            <div class="step-item">
+                <div class="step-point {{ request()->poktan ? 'step-point-active' : '' }}">2</div>
+                <div class="text-xs">Isi Data Usulan</div>
+            </div>
+        </div>
+    </div>
     <div>
         {{-- {{ dd($selected_poktan) }} --}}
         <div class="mt-2">
             <div class="w-full" id="select_poktan" style="{{ $selected_poktan ? 'display:none;' : '' }}">
-                <div class="text-lg font-semibold">Pilih Kelompok Tani</div>
+                <div class="text-lg font-semibold" id="title_poktan">Pilih Kelompok Tani</div>
                 <div class="flex flex-col py-1" id="search_poktan">
                     <label for="search_poktan_input" class="text-semibold">Cari Kelompok Tani</label>
                     <div class="flex items-center justify-between gap-2">
                         <input type="search" name="" value="{{ $selected_poktan ? $selected_poktan->name : '' }}" id="search_poktan_input" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" oninput="searchPoktan(this)">
                         <button type="button" class="btn btn-sm rounded-sm bg-[#070] hover:bg-[#060] text-white" id="add_poktan" onclick="addPoktan(this)">+ Tambah Kelompok Tani</button>
                     </div>
-                    {{-- <div id="list_poktan" class="border-1 border-gray-400 rounded-sm h-50 max-w-full overflow-y-scroll" style="display: none;flex-direction:column;">
-                        <button type="button" class="bg-gray-200 w-full p-2" disabled>-- pilih poktan --</button>
-                    </div> --}}
-                    <table>
+                    <table class="mt-2">
                         <thead><tr>
                             <th class="w-1">No</th>
                             <th>Nama</th>
@@ -117,6 +146,7 @@
             </div>
 
             <div id="usulan_form" style="{{ $selected_poktan ? 'display:block;' : 'display:none;' }}">
+                <div class="text-lg font-semibold">Isi Data Usulan</div>
                 <form action="{{ route('kecamatan.usulan.store') }}" method="POST" id="add_usulan_form" class="w-full">
                     @csrf
                     <input type="number" name="poktan_id" id="poktan_id" value="{{ $selected_poktan ? $selected_poktan->id : '' }}" style="display: none;">
@@ -126,7 +156,8 @@
                             <div class="w-98 flex items-center gap-1">
                                 <input type="text" value="{{ $selected_poktan ? $selected_poktan->name : '' }}" id="poktan_selected" class="py-1 px-2 w-full rounded-sm border-1 border-gray-400" readonly>
                                 <button type="button" class="btn btn-sm text-black rounded-sm bg-[#0bf] hover:bg-[#0ae]" onclick="detailPoktan('{{ session('api_token') }}')">Detail</button>
-                                <button type="button" class="btn btn-sm text-black rounded-sm bg-[#ffc800] hover:bg-[#eeb700]" onclick="changePoktan()">Ganti</button>
+                                {{-- <button type="button" class="btn btn-sm text-black rounded-sm bg-[#ffc800] hover:bg-[#eeb700]" onclick="changePoktan()">Ganti</button> --}}
+                                <a href="{{ route('kecamatan.usulan.create') }}" class="btn btn-sm text-black rounded-sm bg-[#ffc800] hover:bg-[#eeb700]">Ganti</a>
                             </div>
                         </div>
                         <div class="flex flex-col py-1">
@@ -257,6 +288,7 @@
         document.getElementById('create_poktan').style.display = 'block'
         document.getElementById('search_poktan').style.display = 'none'
         document.getElementById('poktan_name').value = document.getElementById('search_poktan_input').value
+        document.getElementById('title_poktan').innerHTML = 'Tambah Kelompok Tani'
     }
     const cancelAddPoktan = (e) => {
         e.style.display = 'none'
@@ -264,6 +296,7 @@
         document.getElementById('create_poktan').style.display = 'none'
         document.getElementById('search_poktan_input').value = ''
         document.getElementById('add_poktan').style.display = ''
+        document.getElementById('title_poktan').innerHTML = 'Pilih Kelompok Tani'
     }
     const selectPoktan = (id, name) => {
         document.getElementById('poktan_id').value = id

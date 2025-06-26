@@ -75,36 +75,4 @@ class User extends Authenticatable
         return $this->hasMany(Document::class, 'updated_by', 'id');
     }
 
-    public function create_pompa_usulan(): HasMany {
-        return $this->hasMany(PompaUsulan::class, 'created_by', 'id');
-    }
-
-    public function update_pompa_usulan(): HasMany {
-        return $this->hasMany(PompaUsulan::class, 'updated_by', 'id');
-    }
-
-    public function create_pompa_diterima(): HasMany {
-        return $this->hasMany(PompaDiterima::class, 'created_by', 'id');
-    }
-
-    public function update_pompa_diterima(): HasMany {
-        return $this->hasMany(PompaDiterima::class, 'updated_by', 'id');
-    }
-
-    public function create_pompa_dimanfaatkan(): HasMany {
-        return $this->hasMany(PompaDimanfaatkan::class, 'created_by', 'id');
-    }
-
-    public function update_pompa_dimanfaatkan(): HasMany {
-        return $this->hasMany(PompaDimanfaatkan::class, 'updated_by', 'id');
-    }
-
-    public function create_luas_tanam(): HasMany {
-        return $this->hasMany(LuasTanam::class, 'created_by', 'id');
-    }
-
-    public function update_luas_tanam(): HasMany {
-        return $this->hasMany(LuasTanam::class, 'updated_by', 'id');
-    }
-
 }

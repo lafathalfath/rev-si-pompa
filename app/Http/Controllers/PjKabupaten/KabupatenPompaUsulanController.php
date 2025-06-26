@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\PjKabupaten;
 
 use App\Http\Controllers\Controller;
+use App\Mail\NotificationEmail;
 use App\Models\Desa;
 use App\Models\Notification;
 use App\Models\NotificationLink;
@@ -11,6 +12,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Mail;
 
 class KabupatenPompaUsulanController extends Controller
 {
@@ -91,10 +93,11 @@ class KabupatenPompaUsulanController extends Controller
         $link = [
             'notification_id' => $notification->id,
             'name' => 'buka halaman pompa ditolak',
-            // 'url' => route('kabupaten.usulan', ['src' => Crypt::encryptString($pompa->id)])
             'url' => route('kecamatan.history.denied', ['src' => Crypt::encryptString($pompa->id)])
         ];
         NotificationLink::create($link);
+        $pj_kecamatan_email = $pompa->desa->kecamatan->pj->email;
+        Mail::to($pj_kecamatan_email)->send(new NotificationEmail([...$notification_data, 'links' => [$link]]));
         $update = $pompa->update([
             'status_id' => 2,
             'updated_by' => $user->id

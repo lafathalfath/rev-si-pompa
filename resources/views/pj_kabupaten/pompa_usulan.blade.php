@@ -77,7 +77,7 @@
                             @if ($pom->status != 'ditolak')
                                 <button class="btn btn-sm bg-[#0a0] hover:bg-[#080] text-white rounded-sm" 
                                 onclick="approveUsulan('{{ route('kabupaten.usulan.approve', Crypt::encryptString($pom->id)) }}', {{ $pom->diusulkan_unit }})"
-                                >Verifikasi</button>
+                                >Setujui</button>
                                 <button class="btn btn-sm bg-red-600 hover:bg-red-700 text-white rounded-sm"
                                 onclick="denyUsulan('{{ route('kabupaten.usulan.deny', Crypt::encryptString($pom->id)) }}')"
                                 >Tolak</button>
@@ -138,7 +138,7 @@
                     <input type="number" min="1" name="diterima_unit" id="diterima_unit" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" required>
                 </div>
             </form>
-            <div class="modal-action"><button class="btn bg-[#070] hover:bg-[#060] text-white" onclick="confirmApprove()">Verifikasi</button><form method="dialog"><button class="btn" onclick="diterima_unit.value=''">Batal</button></form></div>
+            <div class="modal-action"><button class="btn bg-[#070] hover:bg-[#060] text-white" onclick="confirmApprove()">Kirim</button><form method="dialog"><button class="btn" onclick="diterima_unit.value=''">Batal</button></form></div>
         </div>
         <form method="dialog" class="modal-backdrop"><button>close</button></form>
     </dialog>
