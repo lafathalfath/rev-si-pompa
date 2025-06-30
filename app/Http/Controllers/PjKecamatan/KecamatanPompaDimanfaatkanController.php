@@ -16,14 +16,19 @@ use Illuminate\Support\Facades\File;
 
 class KecamatanPompaDimanfaatkanController extends Controller
 {
-    public function index() {
+    public function index(Request $request) {
         $user = Auth::user();
         $token = User::find($user->id)->createToken($user->name);
         $token = str_replace($token->accessToken->id.'|', '', $token->plainTextToken);
         $kecamatan = $user->region;
         $desa = $kecamatan->desa;
-        $pompa = Pompa::whereIn('desa_id', $desa->pluck('id')->unique())
-            ->where('status_id', 3)
+        $pompa = Pompa::whereIn('desa_id', $desa->pluck('id')->unique());
+        if ($request->s) {
+            if ($request->s == 'pending') $pompa = $pompa->where('dimanfaatkan_unit', '=', 0);
+            elseif ($request->s == 'ongoing') $pompa = $pompa->where('dimanfaatkan_unit', '!=', 'diterima_unit');
+            elseif ($request->s == 'completed') $pompa = $pompa->where('dimanfaatkan_unit', '==', 'diterima_unit');
+        }
+        $pompa = $pompa->where('status_id', 3)
             ->orderByDesc('created_at')
             ->get();
         return view('pj_kecamatan.pompa_dimanfaatkan', [
