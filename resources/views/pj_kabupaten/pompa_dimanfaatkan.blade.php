@@ -65,7 +65,7 @@
                     <td class="flex items-center justify-between">
                         <div>{{ $pom->poktan->name }}</div>
                         <button type="button" class="btn btn-sm bg-[#0bf] hover:bg-[#0ae] text-black rounded-sm" 
-                            onclick="detailPoktan('{{ $api_token }}', '{{ $pom->poktan->name }}')"
+                            onclick="detailPoktan('{{ session('api_token') }}', '{{ $pom->poktan->name }}')"
                         >Detail</button>
                     </td>
                     <td>{{ $pom->desa->kecamatan->name }}</td>
@@ -88,7 +88,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="10" class="text-center">Data Kosong</td></tr>
+                <tr><td colspan="11" class="text-center">Data Kosong</td></tr>
             @endforelse
         </tbody>
     </table>

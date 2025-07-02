@@ -15,15 +15,17 @@ class KabupatenPompaDimanfaatkanController extends Controller
 {
     public function index(Request $request) {
         $user = Auth::user();
-        $token = User::find($user->id)->createToken($user->name);
-        $token = str_replace($token->accessToken->id.'|', '', $token->plainTextToken);
         $kecamatan = $user->region->kecamatan;
         $desa = Desa::whereIn('kecamatan_id', $kecamatan->pluck('id')->unique());
         $pompa = Pompa::whereIn('desa_id', $desa->distinct()->pluck('id')->unique())->where('status_id', 3);
         if ($request->src) $pompa = $pompa->where('id', Crypt::decryptString($request->src));
+        if ($request->s) {
+            if ($request->s == 'pending') $pompa = $pompa->where('dimanfaatkan_unit', 0);
+            elseif ($request->s == 'ongoing') $pompa = $pompa->where('dimanfaatkan_unit', '!=', 'diterima_unit');
+            elseif ($request->s == 'completed') $pompa = $pompa->where('dimanfaatkan_unit', '=', 'diterima_unit');
+        }
         $pompa = $pompa->orderByDesc('created_at')->get();
         return view('pj_kabupaten.pompa_dimanfaatkan', [
-            'api_token' => $token,
             'kecamatan' => $kecamatan,
             'pompa' => $pompa
         ]);

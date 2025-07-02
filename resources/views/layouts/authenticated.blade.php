@@ -219,7 +219,7 @@
                 notifItem.classList.remove('bg-[#0703]')
                 notifItem.classList.remove('hover:bg-[#0603]')
                 notifItem.classList.add('hover:bg-gray-200')
-                document.getElementById(`notification_item_action_${id}`).innerHTML = `<button class="text-red-600 hover:text-red-700 cursor-pointer">hapus</button>`
+                document.getElementById(`notification_item_action_${id}`).innerHTML = `<button class="text-red-600 hover:text-red-700 cursor-pointer" onclick="deleteNotification(${id})">hapus</button>`
             } catch (err) {
                 console.error(err.message)
             }

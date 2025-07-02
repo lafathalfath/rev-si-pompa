@@ -10,11 +10,11 @@
     </div>
 
     <div class="my-2 w-full bg-white p-3 rounded border-gray-200 border-1 shadow-lg text-lg font-semibold flex items-center justify-evenly">
-        <a href="{{ route('kecamatan.history.verified') }}" class="flex flex-col items-center">
+        <a href="{{ route('kabupaten.history.verified') }}" class="flex flex-col items-center">
             <div id="progress_percentage" class="text-green-600 radial-progress outline-[0.5rem] outline-gray-300 -outline-offset-[0.5rem]" style="--value:{{ $diverifikasi*100/$total_pompa }};--thickness:0.5rem;" aria-valuenow="{{ $diverifikasi*100/$total_pompa }}" role="progressbar">{{ floor($diverifikasi*100/$total_pompa) }}%</div>
             <div class="text-center">Diverifikasi</div>
         </a>
-        <a href="{{ route('kecamatan.history.denied') }}" class="flex flex-col items-center">
+        <a href="{{ route('kabupaten.history.denied') }}" class="flex flex-col items-center">
             <div id="progress_percentage" class="text-red-600 radial-progress outline-[0.5rem] outline-gray-300 -outline-offset-[0.5rem]" style="--value:{{ $usulan_ditolak*100/$total_pompa }};--thickness:0.5rem;" aria-valuenow="{{ $usulan_ditolak*100/$total_pompa }}" role="progressbar">{{ floor($usulan_ditolak*100/$total_pompa) }}%</div>
             <div>Ditolak</div>
         </a>
@@ -22,12 +22,12 @@
 
     <div class="my-2 w-full flex flex-col gap-2">
         <div class="w-full flex items-center gap-2">
-            <a href="{{ route('kecamatan.usulan') }}" class="w-1/2 bg-white p-3 rounded border-gray-200 border-1 shadow-lg text-center text-lg font-semibold">Mengunggu Persetujuan:<br>{{ $usulan_pending }}</a>
-            <a href="{{ route('kecamatan.dimanfaatkan', ['s' => 'ongoing']) }}" class="w-1/2 bg-white p-3 rounded border-gray-200 border-1 shadow-lg text-center text-lg font-semibold">Dalam Pemanfaatan:<br>{{ $pemanfaatan_ongoing }}</a>
+            <a href="{{ route('kabupaten.usulan') }}" class="w-1/2 bg-white p-3 rounded border-gray-200 border-1 shadow-lg text-center text-lg font-semibold">Mengunggu Persetujuan:<br>{{ $usulan_pending }}</a>
+            <a href="{{ route('kabupaten.dimanfaatkan', ['s' => 'ongoing']) }}" class="w-1/2 bg-white p-3 rounded border-gray-200 border-1 shadow-lg text-center text-lg font-semibold">Dalam Pemanfaatan:<br>{{ $pemanfaatan_ongoing }}</a>
         </div>
         <div class="w-full flex items-center gap-2">
-            <a href="{{ route('kecamatan.dimanfaatkan', ['s' => 'pending']) }}" class="w-1/2 bg-white p-3 rounded border-gray-200 border-1 shadow-lg text-center text-lg font-semibold">Belum Dimanfaatkan:<br>{{ $pemanfaatan_pending }}</a>
-            <a href="{{ route('kecamatan.dimanfaatkan', ['s' => 'completed']) }}" class="w-1/2 bg-white p-3 rounded border-gray-200 border-1 shadow-lg text-center text-lg font-semibold">Menunggu Verifikasi:<br>{{ $pemanfaatan_completed }}</a>
+            <a href="{{ route('kabupaten.dimanfaatkan', ['s' => 'pending']) }}" class="w-1/2 bg-white p-3 rounded border-gray-200 border-1 shadow-lg text-center text-lg font-semibold">Belum Dimanfaatkan:<br>{{ $pemanfaatan_pending }}</a>
+            <a href="{{ route('kabupaten.dimanfaatkan', ['s' => 'completed']) }}" class="w-1/2 bg-white p-3 rounded border-gray-200 border-1 shadow-lg text-center text-lg font-semibold">Menunggu Verifikasi:<br>{{ $pemanfaatan_completed }}</a>
         </div>
     </div>
 
