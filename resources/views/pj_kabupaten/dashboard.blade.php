@@ -11,11 +11,11 @@
 
     <div class="my-2 w-full bg-white p-3 rounded border-gray-200 border-1 shadow-lg text-lg font-semibold flex items-center justify-evenly">
         <a href="{{ route('kabupaten.history.verified') }}" class="flex flex-col items-center">
-            <div id="progress_percentage" class="text-green-600 radial-progress outline-[0.5rem] outline-gray-300 -outline-offset-[0.5rem]" style="--value:{{ $diverifikasi*100/$total_pompa }};--thickness:0.5rem;" aria-valuenow="{{ $diverifikasi*100/$total_pompa }}" role="progressbar">{{ floor($diverifikasi*100/$total_pompa) }}%</div>
+            <div id="progress_percentage" class="text-green-600 radial-progress outline-[0.5rem] outline-gray-300 -outline-offset-[0.5rem]" style="--value:{{ $total_pompa ? $diverifikasi*100/$total_pompa : 0 }};--thickness:0.5rem;" aria-valuenow="{{ $total_pompa ? $diverifikasi*100/$total_pompa : 0 }}" role="progressbar">{{ floor($total_pompa ? $diverifikasi*100/$total_pompa : 0) }}%</div>
             <div class="text-center">Diverifikasi</div>
         </a>
         <a href="{{ route('kabupaten.history.denied') }}" class="flex flex-col items-center">
-            <div id="progress_percentage" class="text-red-600 radial-progress outline-[0.5rem] outline-gray-300 -outline-offset-[0.5rem]" style="--value:{{ $usulan_ditolak*100/$total_pompa }};--thickness:0.5rem;" aria-valuenow="{{ $usulan_ditolak*100/$total_pompa }}" role="progressbar">{{ floor($usulan_ditolak*100/$total_pompa) }}%</div>
+            <div id="progress_percentage" class="text-red-600 radial-progress outline-[0.5rem] outline-gray-300 -outline-offset-[0.5rem]" style="--value:{{ $total_pompa ? $usulan_ditolak*100/$total_pompa : 0 }};--thickness:0.5rem;" aria-valuenow="{{ $total_pompa ? $usulan_ditolak*100/$total_pompa : 0 }}" role="progressbar">{{ floor($total_pompa ? $usulan_ditolak*100/$total_pompa : 0) }}%</div>
             <div>Ditolak</div>
         </a>
     </div>

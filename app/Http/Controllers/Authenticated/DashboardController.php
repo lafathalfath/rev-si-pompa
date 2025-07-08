@@ -53,7 +53,7 @@ class DashboardController extends Controller
                 'diverifikasi' => $diverifikasi
 
             ]);
-        } elseif ($user->role_id = 5) {
+        } elseif ($user->role_id == 5) {
             $desa_ids = $user->region->desa->pluck('id')->unique();
 
             $usulan_per_desa = DB::table('desa')
@@ -90,7 +90,7 @@ class DashboardController extends Controller
                 'usulan_per_desa' => $usulan_per_desa
             ]);
         }
-        return redirect()->route('auth.login.view');
+        return view('dashboard');
     }
 
     public function activation() {
