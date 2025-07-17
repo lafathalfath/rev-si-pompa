@@ -209,7 +209,8 @@
         if (end < start) endEl.value = startEl.value
         const rows = document.querySelectorAll('table tbody tr')
         rows.forEach(row => {
-            const dateCellVal = new Date(new Date(row.children[1].textContent).toISOString().split('T')[0]).getTime()
+            const date = new Date(row.children[1].textContent.slice(0, -9))
+            const dateCellVal = date.getTime()
             let condition = false
             if (start && !end && dateCellVal >= start) condition = true
             else if (!start && end && dateCellVal <= end) condition = true
