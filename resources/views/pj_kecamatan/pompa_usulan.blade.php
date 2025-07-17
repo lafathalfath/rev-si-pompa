@@ -59,7 +59,7 @@
                     <td>
                         @if ($pom->status_id == 1)
                             <button class="btn btn-sm bg-[#ffc800] hover:bg-[#eeb700] text-black rounded-sm" 
-                                onclick="editUsulan('{{ route('kecamatan.usulan.update', Crypt::encryptString($pom->id)) }}', {desa_id: {{ $pom->desa_id }}, luas_lahan: {{ $pom->luas_lahan }}, diusulkan_unit: {{ $pom->diusulkan_unit }}, poktan: '{{ $pom->poktan }}' })"
+                                onclick="editUsulan('{{ route('kecamatan.usulan.update', Crypt::encryptString($pom->id)) }}', {desa_id: {{ $pom->desa_id }}, luas_lahan: {{ $pom->luas_lahan }}, diusulkan_unit: {{ $pom->diusulkan_unit }}, poktan: '{{ $pom->poktan }}', poktan_luas_lahan: '{{ $pom->poktan_luas_lahan }}' })"
                             >Ubah</button>
                             <button class="btn btn-sm bg-red-600 hover:bg-red-700 text-white rounded-sm" onclick="deleteUsulan('{{ route('kecamatan.usulan.destroy', Crypt::encryptString($pom->id)) }}')">Hapus</button>
                         @endif
@@ -85,7 +85,7 @@
                     <input type="text" id="edit_usulan_poktan" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" readonly disabled>
                 </div>
                 <div class="flex flex-col py-1">
-                    <label for="desa_id" class="text-semibold">Desa</label>
+                    <label for="desa_id" class="text-semibold">Desa <span class="text-red-600">*</span></label>
                     <select name="desa_id" id="edit_usulan_desa" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" required>
                         <option disabled>-- pilih desa --</option>
                         @foreach ($desa as $des)
@@ -94,12 +94,16 @@
                     </select>
                 </div>
                 <div class="flex flex-col py-1">
-                    <label for="edit_usulan_luas_lahan" class="text-semibold">Luas Lahan (Ha)</label>
+                    <label for="edit_usulan_luas_lahan" class="text-semibold">Luas Lahan (Ha) <span class="text-red-600">**</span></label>
                     <input type="number" step="0.0001" min="0.0001" name="luas_lahan" id="edit_usulan_luas_lahan" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" required>
                 </div>
                 <div class="flex flex-col py-1">
-                    <label for="edit_usulan_diusulkan_unit" class="text-semibold">Jumlah Pompa Diusulkan</label>
+                    <label for="edit_usulan_diusulkan_unit" class="text-semibold">Jumlah Pompa Diusulkan <span class="text-red-600">*</span></label>
                     <input type="number" min="1" name="diusulkan_unit" id="edit_usulan_diusulkan_unit" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" required>
+                </div>
+                <div class="text-red-600 text-xs mt-2">
+                    *} Tidak boleh kosong <br>
+                    **) Tidak boleh kosong dan tidak boleh lebih dari luas lahan dimiliki kelompok tani
                 </div>
             </form>
             <div class="modal-action"><button class="btn bg-[#ffc800] hover:bg-[#eeb700] text-black rounded-sm" onclick="confirmUpdateUsulan()">Perbarui</button><form method="dialog"><button class="btn" onclick="closeEdit()">Tutup</button></form></div>
@@ -181,9 +185,12 @@
         });
     }
     const editUsulan = (route, data) => {
+        console.log(data);
+        
         document.getElementById('edit_usulan_modal').showModal()
         document.getElementById('edit_usulan').action = route
         document.getElementById('edit_usulan_desa').value = data.desa_id
+        document.getElementById('edit_usulan_luas_lahan').max = data.poktan_luas_lahan
         document.getElementById('edit_usulan_luas_lahan').value = data.luas_lahan
         document.getElementById('edit_usulan_diusulkan_unit').value = data.diusulkan_unit
         document.getElementById('edit_usulan_poktan').value = data.poktan
@@ -281,13 +288,16 @@
         container.innerHTML += alert
     }
     const confirmUpdateUsulan = () => {
-        const luasLahan = document.getElementById('edit_usulan_luas_lahan').value
+        const luasLahan = document.getElementById('edit_usulan_luas_lahan')
         const unit = document.getElementById('edit_usulan_diusulkan_unit').value
         let anyErrors = false
         let errors = []
-        if (luasLahan == 0 || luasLahan == '' || luasLahan == null) {
+        if (luasLahan.value == 0 || luasLahan.value == '' || luasLahan.value == null) {
             anyErrors = true
             errors.push('Luas lahan diusulkan tidak boleh kosong')
+        } else if (luasLahan.value > luasLahan.max) {
+            anyErrors = true
+            errors.push('Luas lahan diusulkan tidak boleh lebih dari luas lahan dimiliki kelompok tani')
         }
         if (unit == 0 || unit == '' || unit == null) {
             anyErrors = true

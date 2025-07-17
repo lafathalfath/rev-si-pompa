@@ -65,6 +65,6 @@ class PoktanController extends Controller
         ];
         $poktan = Poktan::create($poktan);
         $poktan->kepemilikan_tanah()->sync($bukti_kepemilikan);
-        return redirect()->route('kecamatan.usulan.create', ['poktan' => Crypt::encryptString($poktan->id)]);
+        return redirect()->route('kecamatan.usulan.create', ['poktan' => Crypt::encryptString($poktan->id)])->with('success', 'Kelompok tani baru berhasil dibuat');
     }
 }

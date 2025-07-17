@@ -113,12 +113,16 @@
                     <input type="text" name="edit_desa" id="edit_usulan_desa" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" readonly disabled>
                 </div>
                 <div class="flex flex-col py-1">
-                    <label for="edit_usulan_luas_lahan" class="text-semibold">Luas Lahan (Ha)</label>
+                    <label for="edit_usulan_luas_lahan" class="text-semibold">Luas Lahan (Ha) <span class="text-red-600">**</span></label>
                     <input type="number" step="0.0001" min="0.0001" name="luas_lahan" id="edit_usulan_luas_lahan" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" required>
                 </div>
                 <div class="flex flex-col py-1">
-                    <label for="edit_usulan_diusulkan_unit" class="text-semibold">Jumlah Pompa Diusulkan</label>
+                    <label for="edit_usulan_diusulkan_unit" class="text-semibold">Jumlah Pompa Diusulkan <span class="text-red-600">*</span></label>
                     <input type="number" min="1" name="diusulkan_unit" id="edit_usulan_diusulkan_unit" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" required>
+                </div>
+                <div class="text-red-600 text-xs mt-2">
+                    *) Tidak boleh kosong <br>
+                    **) Tidak boleh kosong dan tidak boleh lebih dari luas lahan dimiliki kelompok tani
                 </div>
             </form>
             <div class="modal-action"><button class="btn bg-[#ffc800] hover:bg-[#eeb700] text-black rounded-sm" onclick="confirmUpdate()">Perbarui</button><form method="dialog"><button class="btn" onclick="closeEdit()">Tutup</button></form></div>
@@ -134,8 +138,9 @@
                 @method('PUT')
                 Apakah Anda yakin ingin memverifikasi data pompa diusulkan ini?
                 <div>
-                    <label for="diterima_unit">Masukkan jumlah pompa diterima: </label>
+                    <label for="diterima_unit">Masukkan jumlah pompa diterima: <span class="text-red-600">*</span></label>
                     <input type="number" min="1" name="diterima_unit" id="diterima_unit" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" required>
+                    <div class="text-red-600 text-xs">*) Tidak boleh kosong dan tidak boleh lebih dari jumlah diusulkan</div>
                 </div>
             </form>
             <div class="modal-action"><button class="btn bg-[#070] hover:bg-[#060] text-white" onclick="confirmApprove()">Kirim</button><form method="dialog"><button class="btn" onclick="diterima_unit.value=''">Batal</button></form></div>
@@ -232,6 +237,7 @@
         document.getElementById('edit_usulan').action = route
         document.getElementById('edit_usulan_kecamatan').value = kecamatan
         document.getElementById('edit_usulan_desa').value = data.desa.name
+        document.getElementById('edit_usulan_luas_lahan').max = data.poktan.luas_lahan
         document.getElementById('edit_usulan_luas_lahan').value = data.luas_lahan
         document.getElementById('edit_usulan_diusulkan_unit').value = data.diusulkan_unit
         document.getElementById('edit_usulan_poktan').value = data.poktan.name
@@ -352,7 +358,7 @@
         container.innerHTML += alert
     }
     const confirmUpdate = () => {
-        const luasLahan = document.getElementById('edit_usulan_luas_lahan').value
+        const luasLahan = document.getElementById('edit_usulan_luas_lahan')
         const unit = document.getElementById('edit_usulan_diusulkan_unit').value
         let anyErrors = false
         let errors = []
@@ -360,9 +366,12 @@
             anyErrors = true
             errors.push('Jumlah pemanfaatan pompa tidak boleh kosong')
         }
-        if (luasLahan == 0 || luasLahan == '' || luasLahan == null) {
+        if (luasLahan.value == 0 || luasLahan.value == '' || luasLahan.value == null) {
             anyErrors = true
             errors.push('Luas lahan diusulkan tidak boleh kosong')
+        } else if (luasLahan.value > luasLahan.max) {
+            anyErrors = true
+            errors.push('Luas lahan diusulkan tidak boleh lebih dari luash lahan dimiliki kelompok tani')
         }
         if (anyErrors) {
             errValidation(errors, 'alert-container-edit')
@@ -371,12 +380,15 @@
         document.getElementById('confirm_update_modal').showModal()
     }
     const confirmApprove = () => {
-        const unit = document.getElementById('diterima_unit').value
+        const unit = document.getElementById('diterima_unit')
         let anyErrors = false
         let errors = []
-        if (unit == 0 || unit == '' || unit == null) {
+        if (unit.value == 0 || unit.value == '' || unit.value == null) {
             anyErrors = true
             errors.push('Jumlah pompa diterima tidak boleh kosong')
+        } else if (unit.value > unit.max) {
+            anyErrors = true
+            errors.push('Jumlah pompa diterima tidak boleh lebih dari pompa usulan')
         }
         if (anyErrors) {
             errValidation(errors, 'alert-container-approve')

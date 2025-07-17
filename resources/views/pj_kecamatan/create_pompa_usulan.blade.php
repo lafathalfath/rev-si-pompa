@@ -170,15 +170,18 @@
                             </select>
                         </div>
                         <div class="flex flex-col py-1">
-                            <label for="usulan_luas_lahan" class="text-semibold">Luas Lahan (Ha)<span class="text-red-600">*</span></label>
+                            <label for="usulan_luas_lahan" class="text-semibold">Luas Lahan (Ha)<span class="text-red-600">**</span></label>
                             <input type="number" step="0.0001" min="0" name="luas_lahan" id="usulan_luas_lahan" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" required>
                         </div>
                         <div class="flex flex-col py-1">
                             <label for="usulan_diusulkan_unit" class="text-semibold">Jumlah Pompa Diusulkan<span class="text-red-600">*</span></label>
                             <input type="number" min="1" name="diusulkan_unit" id="usulan_diusulkan_unit" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" required>
                         </div>
-                    </div><br>
-                    <div class="text-red-600 text-sm">*) Wajib diisi</div>
+                    </div>
+                    <div class="text-red-600 text-sm mt-2">
+                        *) Wajib diisi <br>
+                        **) Wajjib diisi dan tidak boleh lebih dari luas lahan dimiliki kelompok tani
+                    </div>
                 </form>
                 <div class="flex justify-end">
                     <button type="submit" onclick="confirmSendUsulan({{ $selected_poktan }})" class="btn rounded-sm text-white bg-[#070] hover:bg-[#060]">Kirim</button>

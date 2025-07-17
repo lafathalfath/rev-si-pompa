@@ -27,7 +27,7 @@ class KecamatanPompaUsulanController extends Controller
             ->join('pompa', 'pompa.desa_id', '=', 'desa.id')
             ->join('poktan', 'pompa.poktan_id', '=', 'poktan.id')
             ->where('pompa.status_id', 1)
-            ->select('pompa.*', 'desa.name as desa', 'poktan.name as poktan')
+            ->select('pompa.*', 'desa.name as desa', 'poktan.name as poktan', 'poktan.luas_lahan as poktan_luas_lahan')
             ->orderByDesc('created_at')
             ->get();
         $desa = $user->region->desa;
@@ -112,7 +112,7 @@ class KecamatanPompaUsulanController extends Controller
             'luas_lahan.required' => 'luas lahan tidak boleh kosong',
             'diusulkan_unit.required' => 'jumlah pompa diusulkan tidak boleh kosong'
         ]);
-        if ($pompa->poktan->luas_lahan < $request->luas_lahan) return back()->withErrors('Usulan luas lahan tidak boleh lebih besar dari luas lahan dimiliki kelompok tani');
+        if ($pompa->poktan->luas_lahan < $request->luas_lahan) return back()->withErrors('Usulan luas lahan tidak boleh lebih dari luas lahan dimiliki kelompok tani');
         $data = [
             'desa_id' => $request->desa_id,
             'luas_lahan' => $request->luas_lahan,

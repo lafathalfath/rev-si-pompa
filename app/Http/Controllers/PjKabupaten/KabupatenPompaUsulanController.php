@@ -50,6 +50,7 @@ class KabupatenPompaUsulanController extends Controller
             'diusulkan_unit.required' => 'Jumlah pompa diusulkan tidak boleh kosong',
             'diusulkan_unit.min' => 'Total unit tidak boleh kosong'
         ]);
+        if ($request->luas_lahan > $pompa->poktan->luas_lahan) return back()->withErrors('Usulan luas lahan tidak boleh lebih dari luas lahan dimiliki kelompok tani');
         $data = [
             'luas_lahan' => $request->luas_lahan,
             'diusulkan_unit' => $request->diusulkan_unit,
@@ -69,6 +70,7 @@ class KabupatenPompaUsulanController extends Controller
             'diterima_unit.required' => 'jumlah pompa diterima tidak boleh kosong',
             'diterima_unit.min' => 'jumlah pompa diterima tidak boleh kurang dari 1',
         ]);
+        if ($request->diterima_unit > $pompa->diterima_unit) return back()->withErrors('Jumlah pompa diterima tidak boleh lebih dari pompa diusulkan');
         $update = $pompa->update([
             'diterima_unit' => $request->diterima_unit,
             'status_id' => 3
