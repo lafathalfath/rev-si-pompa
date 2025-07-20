@@ -109,7 +109,7 @@
         <form action="{{ route('kecamatan.dimanfaatkan.store', request()->id) }}" method="POST" id="add_dimanfaatkan" class="py-4" enctype="multipart/form-data">
             @csrf
             <div class="flex flex-col py-1">
-                <label for="total_unit" class="text-semibold">Total Unit Dimanfaatkan<span class="text-red-600">*</span></label>
+                <label for="total_unit" class="text-semibold">Jumlah Unit Dimanfaatkan<span class="text-red-600">*</span></label>
                 <input type="number" id="add_dimanfaatkan_total_unit" min="1" max="{{ $pompa->diterima_unit - $pompa->dimanfaatkan_unit }}" name="total_unit" id="total_unit" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" required>
             </div>
             <div class="flex flex-wrap gap-2">
@@ -122,7 +122,11 @@
                 <label for="add_dimanfaatkan_bukti" class="text-semibold">Bukti Pemanfaatan<span class="text-red-600">*</span></label>
                 <input type="file" id="add_dimanfaatkan_bukti" accept="application/pdf" name="bukti" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" required>
             </div>
-            <span class="text-red-600 text-sm">*) wajib diisi</span>
+            <span class="text-red-600 text-xs">
+                *) wajib diisi <br>
+                Catatan: <br>
+                Total unit dimanfaatkan dan total luas tanam tidak boleh lebih dari total unit diterima dan luas lahan.
+            </span>
         </form>
         <div class="modal-action"><button class="btn bg-[#070] hover:bg-[#060] text-white rounded-sm" onclick="confirmAdd({{ $pompa }})">Kirim</button><form method="dialog"><button class="btn" onclick="closeAddModal()">Tutup</button></form></div>
     </div>
@@ -150,7 +154,11 @@
                 <label for="edit_dimanfaatkan_bukti" class="text-semibold">Bukti Pemanfaatan</label>
                 <input type="file" id="edit_dimanfaatkan_bukti" accept="application/pdf" name="bukti" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400">
             </div>
-            <span class="text-red-600 text-sm">*) wajib diisi</span>
+            <span class="text-red-600 text-xs">
+                *) wajib diisi <br>
+                Catatan: <br>
+                Total unit dimanfaatkan dan total luas tanam tidak boleh lebih dari total unit diterima dan luas lahan.
+            </span>
         </form>
         <div class="modal-action"><button class="btn bg-[#ffc800] hover:bg-[#eeb700] text-black rounded-sm" onclick="confirmUpdate()">Simpan</button><form method="dialog"><button class="btn" onclick="closeAddModal()">Tutup</button></form></div>
     </div>
@@ -218,11 +226,13 @@
         })
     }
     const editModal = (route, data) => {
+        const unitInput = document.getElementById('edit_dimanfaatkan_total_unit')
+        const luasInput = document.getElementById('edit_dimanfaatkan_luas_tanam')
         document.getElementById('edit_dimanfaatkan').action = route
-        document.getElementById('edit_dimanfaatkan_total_unit').value = data.total_unit
-        document.getElementById('edit_dimanfaatkan_total_unit').max -= data.total_unit
-        document.getElementById('edit_dimanfaatkan_luas_tanam').value = data.luas_tanam
-        document.getElementById('edit_dimanfaatkan_luas_tanam').max -= data.luas_tanam
+        unitInput.value = data.total_unit
+        unitInput.max = parseInt(unitInput.max) + data.total_unit
+        luasInput.value = data.luas_tanam
+        luasInput.max = parseFloat(luasInput.max) + data.luas_tanam
         document.getElementById('edit_dimanfaatkan_modal').showModal()
     }
     const deleteModal = (route) => {
@@ -267,17 +277,25 @@
         document.getElementById('confirm_add_modal').showModal()
     }
     const confirmUpdate = () => {
-        const unit = document.getElementById('edit_dimanfaatkan_total_unit').value
-        const luasLahan = document.getElementById('edit_dimanfaatkan_luas_tanam').value
+        const unit = document.getElementById('edit_dimanfaatkan_total_unit')
+        const luasLahan = document.getElementById('edit_dimanfaatkan_luas_tanam')
         let anyErrors = false
         let errors = []
-        if (luasLahan == 0 || luasLahan == '' || luasLahan == null) {
-            anyErrors = true
-            errors.push('Luas lahan diusulkan tidak boleh kosong')
-        }
-        if (unit == 0 || unit == '' || unit == null) {
+        console.log(unit.max);
+        
+        if (unit.value == 0 || unit.value == '' || unit.value == null) {
             anyErrors = true
             errors.push('Jumlah pemanfaatan pompa tidak boleh kosong')
+        } else if (parseInt(unit.value) > parseInt(unit.max)) {
+            anyErrors = true
+            errors.push('Jumlah pemanfaatan pompa tidak boleh lebih dari pompa diterima')
+        }
+        if (luasLahan.value == 0 || luasLahan.value == '' || luasLahan.value == null) {
+            anyErrors = true
+            errors.push('Luas lahan diusulkan tidak boleh kosong')
+        } else if (parseFloat(luasLahan.value) > parseFloat(luasLahan.max)) {
+            anyErrors = true
+            errors.push('Jumlah luas tanam diisi tidak boleh lebih dari luas lahan')
         }
         if (anyErrors) {
             errValidation(errors, 'alert-container-edit')

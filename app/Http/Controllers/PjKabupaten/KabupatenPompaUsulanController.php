@@ -70,13 +70,13 @@ class KabupatenPompaUsulanController extends Controller
             'diterima_unit.required' => 'jumlah pompa diterima tidak boleh kosong',
             'diterima_unit.min' => 'jumlah pompa diterima tidak boleh kurang dari 1',
         ]);
-        if ($request->diterima_unit > $pompa->diterima_unit) return back()->withErrors('Jumlah pompa diterima tidak boleh lebih dari pompa diusulkan');
+        if ($request->diterima_unit > $pompa->diusulkan_unit) return back()->withErrors('Jumlah pompa diterima tidak boleh lebih dari pompa diusulkan');
         $update = $pompa->update([
             'diterima_unit' => $request->diterima_unit,
             'status_id' => 3
         ]);
         if (!$update) return back()->withErrors('terjadi kesalahan');
-        return back()->with('success', 'data berhasil diverifikasi');
+        return back()->with('success', 'data berhasil disetujui');
     }
 
     public function deny($id) {
