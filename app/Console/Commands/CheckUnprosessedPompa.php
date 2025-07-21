@@ -69,8 +69,7 @@ class CheckUnprosessedPompa extends Command
         }
         $unprosessed_dimanfaatkan = DB::table('pompa')
             ->where('pompa.status_id', '=', 3)
-            ->where('pompa.dimanfaatkan_unit', '=', 'pompa.diterima_unit')
-            // ->where('pompa.updated_at', '>=', Date::now()->subDay(5))
+            ->whereColumn('pompa.dimanfaatkan_unit', '=', 'pompa.diterima_unit')
             ->where('pompa.updated_at', '<', Date::now()->subDay(7))
             ->join('poktan', 'poktan.id', '=', 'pompa.poktan_id')
             ->join('desa', 'desa.id', '=', 'pompa.desa_id')
