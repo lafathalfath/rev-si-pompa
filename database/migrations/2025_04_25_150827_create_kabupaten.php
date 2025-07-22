@@ -16,7 +16,6 @@ return new class extends Migration
             $table->string('name');
             $table->unsignedBigInteger('pj_id')->nullable();
             $table->unsignedBigInteger('provinsi_id');
-            $table->boolean('is_deleted')->default(false);
 
             $table->foreign('pj_id')->references('id')->on('users');
             $table->foreign('provinsi_id')->references('id')->on('provinsi');

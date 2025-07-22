@@ -14,11 +14,7 @@ return new class extends Migration
         Schema::create('desa', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->unsignedBigInteger('pj_id')->nullable();
             $table->unsignedBigInteger('kecamatan_id');
-            $table->boolean('is_deleted')->default(false);
-
-            $table->foreign('pj_id')->references('id')->on('users');
             $table->foreign('kecamatan_id')->references('id')->on('kecamatan');
         });
     }
