@@ -36,7 +36,6 @@ class CheckUnprosessedPompa extends Command
     {
         $unprosessed_usulan = DB::table('pompa')
             ->where('pompa.status_id', '=', 1)
-            // ->where('pompa.created_at', '>=', Date::now()->subDay(5))
             ->where('pompa.created_at', '<', Date::now()->subDay(7))
             ->join('poktan', 'poktan.id', '=', 'pompa.poktan_id')
             ->join('desa', 'desa.id', '=', 'pompa.desa_id')
@@ -84,9 +83,9 @@ class CheckUnprosessedPompa extends Command
             foreach ($unprosessed_dimanfaatkan as $key => $dimanfaatkan) {
                 $notif_dimanfaatkan_data = [
                     'receiver_id' => $key,
-                    'subject' => 'Proses Pemanfaatan',
-                    'title' => count($dimanfaatkan).' Pemanfaatan Pompa Belum Diproses',
-                    'message' => 'Dalam 7 hari '.count($dimanfaatkan).' pemanfaatan pompa belum diproses. Mohon segera proses usulan yang diajukan.'
+                    'subject' => 'Verifikasi Pemanfaatan',
+                    'title' => count($dimanfaatkan).' Pemanfaatan Pompa Belum Diverifikasi',
+                    'message' => 'Dalam 7 hari '.count($dimanfaatkan).' pemanfaatan pompa belum diverifikasi. Mohon segera lakukan verifikasi pemanfaatan pompa.'
                 ];
                 $notif_dimanfaatkan = Notification::create($notif_dimanfaatkan_data);
                 $links = [];
