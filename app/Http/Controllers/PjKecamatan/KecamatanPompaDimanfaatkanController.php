@@ -25,8 +25,8 @@ class KecamatanPompaDimanfaatkanController extends Controller
         $pompa = Pompa::whereIn('desa_id', $desa->pluck('id')->unique());
         if ($request->s) {
             if ($request->s == 'pending') $pompa = $pompa->where('dimanfaatkan_unit', '=', 0);
-            elseif ($request->s == 'ongoing') $pompa = $pompa->where('dimanfaatkan_unit', '!=', 'diterima_unit');
-            elseif ($request->s == 'completed') $pompa = $pompa->where('dimanfaatkan_unit', '==', 'diterima_unit');
+            elseif ($request->s == 'ongoing') $pompa = $pompa->whereColumn('dimanfaatkan_unit', '!=', 'diterima_unit');
+            elseif ($request->s == 'completed') $pompa = $pompa->whereColumn('dimanfaatkan_unit', '=', 'diterima_unit');
         }
         $pompa = $pompa->where('status_id', 3)
             ->orderByDesc('created_at')

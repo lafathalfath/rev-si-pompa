@@ -25,7 +25,7 @@ class KabupatenPompaDiterimaController extends Controller
             ->get();
         $diterima = Pompa::whereIn('desa_id', $desa)
             ->where('status_id', 3)
-            ->where('diterima_unit', '>', 'dimanfaatkan_unit')
+            ->whereColumn('diterima_unit', '>', 'dimanfaatkan_unit')
             ->orderByDesc('created_at')
             ->get();
         return view('pj_kabupaten.pompa_diterima', [

@@ -21,8 +21,8 @@ class KabupatenPompaDimanfaatkanController extends Controller
         if ($request->src) $pompa = $pompa->where('id', Crypt::decryptString($request->src));
         if ($request->s) {
             if ($request->s == 'pending') $pompa = $pompa->where('dimanfaatkan_unit', 0);
-            elseif ($request->s == 'ongoing') $pompa = $pompa->where('dimanfaatkan_unit', '!=', 'diterima_unit');
-            elseif ($request->s == 'completed') $pompa = $pompa->where('dimanfaatkan_unit', '=', 'diterima_unit');
+            elseif ($request->s == 'ongoing') $pompa = $pompa->whereColumn('dimanfaatkan_unit', '!=', 'diterima_unit');
+            elseif ($request->s == 'completed') $pompa = $pompa->whereColumn('dimanfaatkan_unit', '=', 'diterima_unit');
         }
         $pompa = $pompa->orderByDesc('created_at')->get();
         return view('pj_kabupaten.pompa_dimanfaatkan', [

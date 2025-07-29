@@ -20,7 +20,7 @@ class KecamatanPompaDiterimaController extends Controller
         $desa = $kecamatan->desa;
         $pompa = Pompa::whereIn('desa_id', $desa->pluck('id')->unique())
             ->where('status_id', 3)
-            ->where('diterima_unit', '>', 'dimanfaatkan_unit');
+            ->whereColumn('diterima_unit', '>', 'dimanfaatkan_unit');
         if ($request->src) $pompa = $pompa->where('id', Crypt::decryptString($request->src));
         $pompa = $pompa->orderByDesc('created_at')->get();
         return view('pj_kecamatan.pompa_diterima', [
