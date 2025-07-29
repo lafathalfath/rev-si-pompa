@@ -55,7 +55,7 @@ class APINotificationController extends Controller
             'links.*.url.required' => 'alamat tautan tidak boleh kosong',
         ]);
         $notification = new Notification();
-        $notification->sender_id = $user->id;
+        // $notification->sender_id = $user->id;
         $notification->receiver_id = $request->receiver_id;
         $notification->subject = $request->subject;
         $notification->title = $request->title;

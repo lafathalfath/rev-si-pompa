@@ -85,7 +85,7 @@ class KabupatenPompaUsulanController extends Controller
         if (!$pompa) return back()->withErrors('Data tidak ditemukan');
         if ($pompa->status_id != 1) return back()->withErrors('status sudah diperbarui');
         $notification_data = [
-            'sender_id' => $user->id,
+            // 'sender_id' => $user->id,
             'receiver_id' => $pompa->created_by,
             'subject' => 'Usulan Ditolak',
             'title' => 'Usulan Pompa Kelompok Tani '. $pompa->poktan->name,

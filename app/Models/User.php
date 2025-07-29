@@ -51,9 +51,9 @@ class User extends Authenticatable
         return $this->hasOne($region, 'pj_id', 'id');
     }
 
-    public function notification_send(): HasMany {
-        return $this->hasMany(Notification::class, 'sender_id', 'id');
-    }
+    // public function notification_send(): HasMany {
+    //     return $this->hasMany(Notification::class, 'sender_id', 'id');
+    // }
 
     public function notification_receive(): HasMany {
         return $this->hasMany(Notification::class, 'receiver_id', 'id');

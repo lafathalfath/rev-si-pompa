@@ -14,9 +14,9 @@ class Notification extends Model
     protected $table = 'notification';
     protected $guarded = [];
 
-    public function sender(): BelongsTo {
-        return $this->belongsTo(User::class, 'sender_id', 'id');
-    }
+    // public function sender(): BelongsTo {
+    //     return $this->belongsTo(User::class, 'sender_id', 'id');
+    // }
 
     public function receiver(): BelongsTo {
         return $this->belongsTo(User::class, 'receiver_id', 'id');

@@ -24,7 +24,7 @@ class DashboardController extends Controller
             $usulan_per_kecamatan = DB::table('desa')
                 ->whereIn('desa.id', $desa_ids)
                 ->join('pompa', 'pompa.desa_id', '=', 'desa.id')
-                ->join('kecamatan', 'kecamatan.id', '=', 'desa.kecamatan_Id')
+                ->join('kecamatan', 'kecamatan.id', '=', 'desa.kecamatan_id')
                 ->select('kecamatan.name', DB::raw('count(pompa.id) as total'))
                 ->groupBy('kecamatan.name')
                 ->orderByDesc('total')
