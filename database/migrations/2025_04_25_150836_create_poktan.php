@@ -19,8 +19,6 @@ return new class extends Migration
             $table->text('ktp')->unique();
             $table->unsignedBigInteger('desa_id');
             $table->unsignedFloat('luas_lahan', 8, 4);
-            $table->enum('status', ['diverifikasi', 'ditolak'])->nullable();
-            $table->timestamp('verified_at')->nullable();
             $table->unsignedBigInteger('created_by');
             $table->unsignedBigInteger('updated_by')->nullable();
             $table->timestamps();

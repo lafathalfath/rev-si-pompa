@@ -14,6 +14,8 @@ class Kecamatan extends Model
     protected $table = 'kecamatan';
     protected $guarded = [];
 
+    public $timestamps = false;
+
     public function pj(): BelongsTo {
         return $this->belongsTo(User::class, 'pj_id', 'id');
     }

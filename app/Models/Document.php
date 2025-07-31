@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Document extends Model
@@ -18,8 +19,8 @@ class Document extends Model
         return $this->belongsToMany(Poktan::class, 'p_poktan_kepemilikan', 'document_id', 'poktan_id');
     }
 
-    public function bukti_pembelian_dimanfaatkan(): BelongsToMany {
-        return $this->belongsToMany(PompaDimanfaatkan::class, 'p_dimanfaatkan_bukti', 'document_id', 'pompa_dimanfaatkan_id');
+    public function bukti_pemanfaatan(): HasMany {
+        return $this->hasMany(Pompa::class, 'bukti_id', 'id');
     }
 
     public function create_by(): BelongsTo {

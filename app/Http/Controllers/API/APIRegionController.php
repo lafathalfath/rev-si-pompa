@@ -61,4 +61,11 @@ class APIRegionController extends Controller
             ->get();
         return response()->json($desa);
     }
+
+    public function getDesaByKecamatanName($name) {
+        $kecamatan = Kecamatan::where('name', 'LIKE', "%$name%")->first();
+        if (!$kecamatan) return response()->json(null, 404);
+        $desa = $kecamatan->desa;
+        return response()->json($desa);
+    }
 }

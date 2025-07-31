@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\PjKecamatan;
 
 use App\Http\Controllers\Controller;
+use App\Models\Desa;
+use App\Models\Notification;
+use App\Models\NotificationLink;
 use App\Models\Poktan;
-use App\Models\PompaUsulan;
+use App\Models\Pompa;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,40 +21,35 @@ class KecamatanPompaUsulanController extends Controller
         $user = Auth::user();
         $token = User::find($user->id)->createToken($user->name);
         $token = str_replace($token->accessToken->id.'|', '', $token->plainTextToken);
-        $usulan = DB::table('kecamatan')
+        $pompa = DB::table('kecamatan')
             ->where('kecamatan.pj_id', $user->id)
             ->join('desa', 'desa.kecamatan_id', '=', 'kecamatan.id')
-            ->join('pompa_usulan', 'pompa_usulan.desa_id', '=', 'desa.id')
-            ->join('poktan', 'pompa_usulan.poktan_id', '=', 'poktan.id')
-            // ->select('pompa_usulan.*', 'desa.* as desa', 'poktan.* as poktan')
-            ->select('pompa_usulan.*', 'desa.name as desa', 'poktan.name as poktan')
+            ->join('pompa', 'pompa.desa_id', '=', 'desa.id')
+            ->join('poktan', 'pompa.poktan_id', '=', 'poktan.id')
+            ->where('pompa.status_id', 1)
+            ->select('pompa.*', 'desa.name as desa', 'poktan.name as poktan', 'poktan.luas_lahan as poktan_luas_lahan')
             ->orderByDesc('created_at')
             ->get();
         $desa = $user->region->desa;
-        // dd($usulan);
-        // $usulan = $user->region->desa;
         return view('pj_kecamatan.pompa_usulan', [
-            'usulan' => $usulan,
+            'pompa' => $pompa,
             'desa' => $desa,
             'api_token' => $token
         ]);
     }
 
     public function create(Request $request) {
-        // $poktan = Poktan::get();
         $user = Auth::user();
-        $user = User::find($user->id);
-        $token_creation = $user->createToken($user->name);
-        $token = str_replace($token_creation->accessToken->id.'|', '', $token_creation->plainTextToken);
         $kecamatan = $user->region;
         $desa = $kecamatan->desa;
-        $poktan = null;
-        if ($request->poktan) $poktan = Poktan::find(Crypt::decryptString($request->poktan));
+        $selected_poktan = null;
+        if ($request->poktan) $selected_poktan = Poktan::find(Crypt::decryptString($request->poktan));
+        $poktan = Poktan::whereIn('desa_id', $desa->pluck('id')->unique())->get();
         return view('pj_kecamatan.create_pompa_usulan', [
-            'api_token' => $token,
             'kecamatan' => $kecamatan,
             'desa' => $desa,
-            'poktan' => $poktan
+            'poktan' => $poktan,
+            'selected_poktan' => $selected_poktan
         ]);
     }
 
@@ -61,52 +59,105 @@ class KecamatanPompaUsulanController extends Controller
             'poktan_id' => 'required|numeric',
             'desa_id' => 'required|numeric',
             'luas_lahan' => 'required|numeric',
-            'total_unit' => 'required|numeric'
+            'diusulkan_unit' => 'required|numeric'
         ], [
             'poktan_id.required' => 'kelompok tani tidak boleh kosong',
             'desa_id.required' => 'desa tidak boleh kosong',
             'luas_lahan.required' => 'luas lahan tidak boleh kosong',
-            'total_unit.required' => 'jumlah pompa diusulkan tidak boleh kosong'
+            'diusulkan_unit.required' => 'jumlah pompa diusulkan tidak boleh kosong'
         ]);
-        // dd($request->all());
+        $poktan = Poktan::find($request->poktan_id);
+        if ($poktan->luas_lahan < $request->luas_lahan) return back()->withErrors('Usulan luas lahan tidak boleh lebih besar dari luas lahan dimiliki kelompok tani');
         $data = [
             'desa_id' => $request->desa_id,
             'poktan_id' => $request->poktan_id,
             'luas_lahan' => $request->luas_lahan,
-            'total_unit' => $request->total_unit,
+            'diusulkan_unit' => $request->diusulkan_unit,
             'created_by' => $user->id,
         ];
-        PompaUsulan::create($data);
+        $pompa = Pompa::create($data);
+        $desa = Desa::find($request->desa_id);
+        $kecamatan = $desa->kecamatan;
+        $pj_kabupaten_id = $kecamatan->kabupaten->pj_id;
+        // $notification_data = [
+        //     'sender_id' => $user->id,
+        //     'receiver_id' => $pj_kabupaten_id,
+        //     'subject' => 'Data Baru',
+        //     'title' => 'Usulan Baru Pompa',
+        //     'message' => "Penanggung Jawab Kecamatan $kecamatan->name menambahkan usulan baru pompa untuk kelompok tani ". $pompa->poktan->name ." di desa $desa->name."
+        // ];
+        // $notification = Notification::create($notification_data);
+        // $link = [
+        //     'notification_id' => $notification->id,
+        //     'name' => 'buka halaman pompa usulan',
+        //     'url' => route('kabupaten.usulan', ['src' => Crypt::encryptString($pompa->id)])
+        // ];
+        // NotificationLink::create($link);
         return redirect()->route('kecamatan.usulan')->with('success', 'Usulan Berhasil Ditambahkan');
     }
 
     public function update($id, Request $request) {
+        $user = Auth::user();
+        $kecamatan = $user->region;
         $id = Crypt::decryptString($id);
-        $usulan = PompaUsulan::find($id);
-        if (!$usulan) return back()->withErrors('data pompa usulan tidak ditemukan');
-        if ($usulan->status == 'diverifikasi') return back()->withErrors('data pompa diusulkan sudah diverifikasi');
+        $pompa = Pompa::find($id);
+        if (!$pompa) return back()->withErrors('data pompa usulan tidak ditemukan');
+        if ($pompa->status_id != 1) return back()->withErrors('data yang telah diverifikasi tidak dapat diubah');
         $request->validate([
             'desa_id' => 'required|numeric',
             'luas_lahan' => 'required|numeric',
-            'total_unit' => 'required|numeric'
+            'diusulkan_unit' => 'required|numeric'
         ], [
             'desa_id.required' => 'desa tidak boleh kosong',
             'luas_lahan.required' => 'luas lahan tidak boleh kosong',
-            'total_unit.required' => 'jumlah pompa diusulkan tidak boleh kosong'
+            'diusulkan_unit.required' => 'jumlah pompa diusulkan tidak boleh kosong'
         ]);
+        if ($pompa->poktan->luas_lahan < $request->luas_lahan) return back()->withErrors('Usulan luas lahan tidak boleh lebih dari luas lahan dimiliki kelompok tani');
         $data = [
             'desa_id' => $request->desa_id,
             'luas_lahan' => $request->luas_lahan,
-            'total_unit' => $request->total_unit,
-            'status' => null
+            'diusulkan_unit' => $request->diusulkan_unit,
+            'updated_by' => $user->id,
+            'status_id' => 1
         ];
-        if ($usulan->update($data)) return back()->with('success', 'data pompa diusulkan berhasil diperbarui');
+        // $notification_data = [
+        //     'sender_id' => $user->id,
+        //     'receiver_id' => $kecamatan->kabupaten->pj_id,
+        //     'subject' => 'Data Diperbarui',
+        //     'title' => 'Perubahan Usulan Pompa',
+        //     'message' => "Penanggung Jawab Kecamatan $kecamatan->name mengubah usulan pompa untuk kelompok tani ". $pompa->poktan->name ." di desa ".$pompa->desa->name."."
+        // ];
+        // $notification = Notification::create($notification_data);
+        // $link = [
+        //     'notification_id' => $notification->id,
+        //     'name' => 'buka halaman pompa usulan',
+        //     'url' => route('kabupaten.usulan', ['src' => Crypt::encryptString($pompa->id)])
+        // ];
+        // NotificationLink::create($link);
+        if ($pompa->update($data)) return back()->with('success', 'data pompa diusulkan berhasil diperbarui');
     }
 
     public function destroy($id) {
-        $usulan = PompaUsulan::find(Crypt::decryptString($id));
-        if (!$usulan) return back()->withErrors('data pompa usulan tidak ditemukan');
-        if ($usulan->delete()) return back()->with('success', 'data pompa usulan berhasil dihapus');
+        $user = Auth::user();
+        $kecamatan = $user->region;
+        $pompa = Pompa::find(Crypt::decryptString($id));
+        if (!$pompa) return back()->withErrors('data pompa usulan tidak ditemukan');
+        if ($pompa->status_id != 1) return back()->withErrors('data yang telah diverifikasi tidak dapat dihapus');
+        // $notification_data = [
+        //     'sender_id' => $user->id,
+        //     'receiver_id' => $kecamatan->kabupaten->pj_id,
+        //     'subject' => 'Data Dihapus',
+        //     'title' => 'Usulan Pompa Dihapus',
+        //     'message' => "Penanggung Jawab Kecamatan $kecamatan->name menghapus usulan pompa untuk kelompok tani ". $pompa->poktan->name ." di desa ".$pompa->desa->name."."
+        // ];
+        // $notification = Notification::create($notification_data);
+        // $link = [
+        //     'notification_id' => $notification->id,
+        //     'name' => 'buka halaman pompa usulan',
+        //     'url' => route('kabupaten.usulan')
+        // ];
+        // NotificationLink::create($link);
+        if ($pompa->delete()) return back()->with('success', 'data pompa usulan berhasil dihapus');
     }
 
 }

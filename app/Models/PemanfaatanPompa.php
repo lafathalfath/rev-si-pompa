@@ -6,15 +6,19 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class LuasTanam extends Model
+class PemanfaatanPompa extends Model
 {
     use HasFactory;
 
-    protected $table = 'luas_tanam';
+    protected $table = 'pemanfaatan_pompa';
     protected $guarded = [];
 
-    public function pompa_diterima(): BelongsTo {
-        return $this->belongsTo(PompaDiterima::class, 'pompa_diterima_id', 'id');
+    public function pompa(): BelongsTo {
+        return $this->belongsTo(Pompa::class, 'pompa_id', 'id');
+    }
+
+    public function bukti(): BelongsTo {
+        return $this->belongsTo(Document::class, 'bukti_id', 'id');
     }
 
     public function create_by(): BelongsTo {
@@ -24,4 +28,5 @@ class LuasTanam extends Model
     public function update_by(): BelongsTo {
         return $this->belongsTo(User::class, 'updated_by', 'id');
     }
+
 }

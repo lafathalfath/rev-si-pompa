@@ -1,4 +1,5 @@
 @extends('layouts.auth')
+@section('title')| Aktivasi Akun @endsection
 @section('content')
 <style>
     .btn-lihat-password {
@@ -17,7 +18,7 @@
         <a href="{{ route('auth.logout') }}" class="text-red-600 hover:text-red-700">Logout</a>
     </div>
     <div class="flex flex-col items-center">
-        <div class="p-5 text-2xl text-center font-semibold">Aktifasi Akun</div>
+        <div class="p-5 text-2xl text-center font-semibold">Aktivasi Akun</div>
     </div>
     <form action="{{ route('activate') }}" method="POST">
         @csrf
@@ -44,7 +45,7 @@
         </div>
         <div class="text-red-600 text-sm">* Wajib diisi</div>
         <div class="mt-10 flex justify-center">
-            <button type="submit" class="btn text-white bg-[#0a0] hover:bg-[#090]">Aktifasi</button>
+            <button type="submit" class="btn text-white bg-[#0a0] hover:bg-[#090]">Aktivasi</button>
         </div>
     </form>
 </div>

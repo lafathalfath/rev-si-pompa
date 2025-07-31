@@ -14,6 +14,8 @@ class Desa extends Model
     protected $table = 'desa';
     protected $guarded = [];
 
+    public $timestamps = false;
+
     public function pj(): BelongsTo {
         return $this->belongsTo(User::class, 'pj_id', 'id');
     }
@@ -26,7 +28,7 @@ class Desa extends Model
         return $this->hasMany(Poktan::class, 'desa_id', 'id');
     }
 
-    public function pompa_usulan(): HasMany {
-        return $this->hasMany(PompaUsulan::class, 'desa_id', 'id');
+    public function pompa(): HasMany {
+        return $this->hasMany(Pompa::class, 'desa_id', 'id');
     }
 }

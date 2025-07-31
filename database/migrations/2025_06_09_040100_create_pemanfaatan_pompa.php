@@ -11,18 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('luas_tanam', function (Blueprint $table) {
+        Schema::create('pemanfaatan_pompa', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('pompa_diterima_id');
-            $table->unsignedInteger('unit_digunakan');
+            $table->unsignedBigInteger('pompa_id');
+            $table->unsignedInteger('total_unit');
             $table->unsignedFloat('luas_tanam', 8, 4);
-            $table->enum('status', ['diverifikasi', 'ditolak'])->nullable();
-            $table->timestamp('verified_at')->nullable();
+            $table->unsignedBigInteger('bukti_id');
             $table->unsignedBigInteger('created_by');
             $table->unsignedBigInteger('updated_by')->nullable();
             $table->timestamps();
             
-            $table->foreign('pompa_diterima_id')->references('id')->on('pompa_diterima');
+            $table->foreign('pompa_id')->references('id')->on('pompa')->onDelete('cascade');
+            $table->foreign('bukti_id')->references('id')->on('document');
             $table->foreign('created_by')->references('id')->on('users');
             $table->foreign('updated_by')->references('id')->on('users');
         });
@@ -33,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('luas_tanam');
+        Schema::dropIfExists('pemanfaatan_pompa');
     }
 };

@@ -1,8 +1,344 @@
 @extends('layouts.authenticated')
+@section('title')| Pompa Dimanfaatkan @endsection
 @section('content')
     
 <div>
-    POMPA DIMANFAATKAN
+    <div class="text-xl font-bold">Data Pompa Dimanfaatkan</div>
+    
+    <div class="mt-5 mb-1 flex justify-between items-center">
+        <div class="">
+            <div>
+                <label for="search_dimanfaatkan">Cari data pompa dimanfaatkan</label><br>
+                <input type="search" id="search_dimanfaatkan" oninput="searchData(this)" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400">
+            </div>
+            <div class="mt-1 flex items-center gap-2">
+                <div class="">
+                    <label class="text-semibold">Tanggal: </label>
+                    <input type="date" id="filter_date_start" class="py-1 rounded-sm border-1 border-gray-400" oninput="filterDate()">
+                    s/d
+                    <input type="date" id="filter_date_end" class="py-1 rounded-sm border-1 border-gray-400" oninput="filterDate()">
+                </div>
+                <div>
+                    <label for="filter_kecamatan">Kecamatan: </label>
+                    <select id="filter_kecamatan" oninput="filterKecamatan(this)" class="py-1 px-2 rounded-sm border-1 border-gray-400">
+                        <option value="" selected>Semua</option>
+                        @foreach ($kecamatan as $kc)
+                            <option value="{{ $kc->name }}">{{ $kc->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div id="filter_desa_container" style="display: none;">
+                    <label for="filter_desa">Desa: </label>
+                    <select id="filter_desa" oninput="filterDesa(this)" class="py-1 px-2 rounded-sm border-1 border-gray-400">
+                        <option value="" selected>Semua</option>
+                    </select>
+                </div>
+                <a href="" class="btn btn-sm text-white bg-gray-500 hover:bg-gray-600">Bersihkan</a>
+            </div>
+        </div>
+    </div>
+    <table class="w-full">
+        <thead>
+            <tr>
+                <th>No.</th>
+                <th>Tanggal</th>
+                <th>Kelompok Tani</th>
+                <th>Kecamatan</th>
+                <th>Desa</th>
+                <th>Luas Lahan (Ha)</th>
+                <th>Total Usulan</th>
+                <th>Total Diterima</th>
+                <th>Total Dimanfaatkan</th>
+                <th>Total Luas Tanam (Ha)</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse ($pompa as $pom)
+                @php
+                    $pompa_progress = round($pom->dimanfaatkan_unit*100/$pom->diterima_unit);
+                    $luas_tanam_progress = round($pom->total_tanam*100/$pom->luas_lahan);
+                @endphp
+                <tr>
+                    <td id="number_row"></td>
+                    <td>{{ $pom->created_at }}</td>
+                    <td class="flex items-center justify-between">
+                        <div>{{ $pom->poktan->name }}</div>
+                        <button type="button" class="btn btn-sm bg-[#0bf] hover:bg-[#0ae] text-black rounded-sm" 
+                            onclick="detailPoktan('{{ session('api_token') }}', '{{ $pom->poktan->name }}')"
+                        >Detail</button>
+                    </td>
+                    <td>{{ $pom->desa->kecamatan->name }}</td>
+                    <td>{{ $pom->desa->name }}</td>
+                    <td>{{ $pom->luas_lahan }}</td>
+                    <td>{{ $pom->diusulkan_unit }}</td>
+                    <td>{{ $pom->diterima_unit }}</td>
+                    <td><div class="flex items-center justify-center gap-2">
+                        <div>{{ $pom->dimanfaatkan_unit }}</div>
+                        <div id="progress_percentage" class="radial-progress text-xs" style="--value:{{ $pompa_progress }};--size:2.2rem;--thickness:0.2rem;" aria-valuenow="{{ $pompa_progress }}" role="progressbar">{{ $pompa_progress }}%</div>
+                    </div></td>
+                    <td><div class="flex items-center justify-center gap-2">
+                        <div>{{ $pom->total_tanam }}</div>
+                        <div id="progress_percentage" class="radial-progress text-xs" style="--value:{{ $luas_tanam_progress }};--size:2.2rem;--thickness:0.2rem;" aria-valuenow="{{ $luas_tanam_progress }}" role="progressbar">{{ $luas_tanam_progress }}%</div>
+                    </div></td>
+                    <td>
+                        <div class="tooltip" data-tip="Pemanfaatan Pompa">
+                            <a href="{{ route('kabupaten.dimanfaatkan.detail', Crypt::encryptString($pom->id)) }}" class="btn btn-sm bg-[#0a0] hover:bg-[#080] text-white rounded-sm">&#10140;</a>
+                        </div>
+                    </td>
+                </tr>
+            @empty
+                <tr><td colspan="11" class="text-center">Data Kosong</td></tr>
+            @endforelse
+        </tbody>
+    </table>
+
+    <dialog id="detail_poktan_modal" class="modal">
+        <div class="modal-box">
+            <h3 class="text-lg font-bold">Detail Kelompok Tani</h3>
+            <div id="detail_poktan" class="py-4">
+                <div class="flex flex-col py-1">
+                    <label class="text-semibold">Nama Kelompok Tani</label>
+                    <input type="text" id="detail_poktan_name" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" readonly disabled>
+                </div>
+                <div class="flex flex-col py-1">
+                    <label class="text-semibold">No. HP</label>
+                    <input type="text" id="detail_poktan_phone" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" readonly disabled>
+                </div>
+                <div class="flex flex-col py-1">
+                    <label class="text-semibold">Alamat</label>
+                    <textarea id="detail_poktan_address" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" readonly disabled></textarea>
+                </div>
+                <div class="flex flex-col py-1">
+                    <label class="text-semibold">KTP</label>
+                    <iframe src="" frameborder="0" class="border-1 border-black" id="detail_poktan_ktp" style="display: none;"></iframe>
+                    <button type="button" class="btn btn-sm text-black rounded-sm bg-[#0bf] hover:bg-[#0ae]" onclick="showDetailKtp(this)">Lihat KTP</button>
+                </div>
+                <div class="flex flex-col py-1">
+                    <label class="text-semibold">Luas Lahan Dimiliki (Ha)</label>
+                    <input type="text" id="detail_poktan_luas_lahan" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" readonly disabled>
+                </div>
+                <div class="flex flex-col py-1">
+                    <label class="text-semibold">Bukti Kepemilikan Lahan</label>
+                    <div id="detail_poktan_bukti" class="w-full flex flex-col gap-1" style="display: none;"></div>
+                    <button type="button" class="btn btn-sm text-black rounded-sm bg-[#0bf] hover:bg-[#0ae]" onclick="showBukti(this)">Lihat Bukti Kepemilikan Lahan</button>
+                </div>
+            </div>
+            <div class="modal-action"><form method="dialog"><button class="btn">tutup</button></form></div>
+        </div>
+        <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
+    <dialog id="edit_dimanfaatkan_modal" class="modal">
+        <div class="modal-box">
+            <h3 class="text-lg font-bold">Ubah </h3>
+            <form action="" method="POST" id="edit_dimanfaatkan" class="py-4">
+                @csrf
+                @method('PUT')
+                <div class="flex flex-col py-1">
+                    <label class="text-semibold">Kecamatan</label>
+                    <input type="text" id="edit_dimanfaatkan_kecamatan" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" readonly disabled>
+                </div>
+                <div class="flex flex-col py-1">
+                    <label class="text-semibold">Desa</label>
+                    <input type="text" id="edit_dimanfaatkan_desa" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" readonly disabled>
+                </div>
+                <div class="flex flex-col py-1">
+                    <label class="text-semibold">Kelompok Tani</label>
+                    <input type="text" id="edit_dimanfaatkan_poktan" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" readonly disabled>
+                </div>
+                <div class="flex flex-col py-1">
+                    <label class="text-semibold">Luas Lahan (Ha)</label>
+                    <input type="text" id="edit_dimanfaatkan_luas_lahan" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" readonly disabled>
+                </div>
+                <div class="flex flex-col py-1">
+                    <label class="text-semibold">Total Unit Diterima</label>
+                    <input type="text" id="edit_dimanfaatkan_terima_total_unit" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" readonly disabled>
+                </div>
+                <div class="flex flex-col py-1">
+                    <label class="text-semibold">Total Unit Diusulkan</label>
+                    <input type="text" id="edit_dimanfaatkan_usulan_total_unit" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" readonly disabled>
+                </div>
+                <div class="flex flex-col py-1">
+                    <label for="total_unit" class="text-semibold">Total Unit Dimanfaatkan </label>
+                    <input type="number" id="edit_dimanfaatkan_total_unit" min="0" name="total_unit" id="total_unit" class="py-1 px-2 w-98 rounded-sm border-1 border-gray-400" required>
+                </div>
+            </form>
+            <div class="modal-action"><button class="btn bg-[#ffc800] hover:bg-[#eeb700] text-black rounded-sm" onclick="edit_dimanfaatkan.submit()">Perbarui</button><form method="dialog"><button class="btn" onclick="closeEdit()">Tutup</button></form></div>
+        </div>
+        <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
+    <dialog id="verifikasi_data_modal" class="modal">
+        <div class="modal-box">
+            <h3 class="text-lg font-bold">Konfirmasi</h3>
+            <form action="" method="POST" id="verifikasi_data" class="py-4">
+                @csrf
+                @method('PUT')
+                Apakah Anda yakin ingin memverifikasi data Pompa Dimanfaatkan ini?
+            </form>
+            <div class="modal-action"><button class="btn bg-[#070] hover:bg-[#060] text-white" onclick="verifikasi_data.submit()">Ya</button><form method="dialog"><button class="btn">Batal</button></form></div>
+        </div>
+        <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
+    <dialog id="tolak_data_modal" class="modal">
+        <div class="modal-box">
+            <h3 class="text-lg font-bold">Konfirmasi</h3>
+            <form action="" method="POST" id="tolak_data" class="py-4">
+                @csrf
+                @method('PUT')
+                Apakah Anda yakin ingin menolak verifiikasi data Pompa Dimanfaatkan ini?
+            </form>
+            <div class="modal-action"><button class="btn bg-red-600 hover:bg-red-700 text-white" onclick="tolak_data.submit()">Ya</button><form method="dialog"><button class="btn">Batal</button></form></div>
+        </div>
+        <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
+
 </div>
+
+<script>
+    const numbering = () => {
+        const rows = document.querySelectorAll('table tbody tr')
+        let index = 1
+        rows.forEach(row => {
+            if (row.style.display != 'none' && row.children[0].id == 'number_row') {row.children[0].textContent = `${index}`
+            index++}
+        });
+    } 
+    const progressColor = (percentage) => {
+        const value = percentage
+        const red_max = 255
+        const green_max = 200
+        let red = 255
+        let green = 0
+        if (value <= 50) green += Math.round(green_max * (value*2/100))
+        else {
+            green = green_max
+            red -= Math.round(red_max * ((value-50) * 2/100))
+        }
+        return `rgb(${red}, ${green}, 0)`
+    }
+    const showPercentage = () => {
+        const element = document.querySelectorAll('#progress_percentage')
+        element.forEach(e => {
+            const value = parseInt(e.textContent.replace('%', ''))
+            e.style.color = `${progressColor(value)}`
+        })
+    }
+    const searchData = (e) => {
+        const {value} = e
+        const rows = document.querySelectorAll('table tbody tr')
+        rows.forEach(row => {
+            row.style.display = row.textContent.toLowerCase().includes(value.toLowerCase()) ? '' : 'none'
+        });
+        numbering()
+    }
+    const filterDate = () => {
+        const startEl = document.getElementById('filter_date_start')
+        const endEl = document.getElementById('filter_date_end')
+        const start = new Date(startEl.value).getTime()
+        const end = new Date(endEl.value).getTime()
+        if (!start && !end) return
+        if (end < start) endEl.value = startEl.value
+        const rows = document.querySelectorAll('table tbody tr')
+        rows.forEach(row => {
+            const date = new Date(row.children[1].textContent.slice(0, -9))
+            const dateCellVal = date.getTime()
+            let condition = false
+            if (start && !end && dateCellVal >= start) condition = true
+            else if (!start && end && dateCellVal <= end) condition = true
+            else if (start && end && dateCellVal >= start && dateCellVal <= end) condition = true
+            else condition = false
+            row.style.display = condition ? '' : 'none'
+        });
+        numbering()
+    }
+    const filterKecamatan = async (e) => {
+        const {value} = e
+        const rows = document.querySelectorAll('table tbody tr')
+        rows.forEach(row => {
+            const desaCell = row.children[3]
+            row.style.display = desaCell.textContent.includes(value) ? '' : 'none'
+        });
+        if (value) try {
+            const response = await fetch(`/api/desa/${value}`)
+            const data = await response.json()
+            document.getElementById('filter_desa_container').style.display = data ? '' : 'none'
+            if (data) {const filterDesa = document.getElementById('filter_desa')
+            let inner = '<option value="" selected>Semua</option>'
+            data.forEach(desa => {
+                inner += `<option value="${desa.name}">${desa.name}</option>`
+            });
+            filterDesa.innerHTML = inner
+            numbering()}
+        } catch (err) {
+            console.error(err.message)
+        }
+    }
+    const filterDesa = (e) => {
+        const {value} = e
+        const rows = document.querySelectorAll('table tbody tr')
+        rows.forEach(row => {
+            const desaCell = row.children[4]
+            row.style.display = desaCell.textContent.includes(value) ? '' : 'none'
+        });
+        numbering()
+    }
+    const detailPoktan = async (token, poktanName) => {
+        if (!poktanName) return
+        try {
+            const response = await fetch(`/api/poktan/${poktanName}`, {headers: {"Authorization": `Bearer ${token}`}})
+            const data = await response.json()
+            if (!data) return
+            const buktiContainer = document.getElementById('detail_poktan_bukti')
+            document.getElementById('detail_poktan_name').value = data.name
+            document.getElementById('detail_poktan_phone').value = data.phone_number
+            document.getElementById('detail_poktan_address').value = data.full_address
+            document.getElementById('detail_poktan_ktp').src = data.ktp
+            document.getElementById('detail_poktan_luas_lahan').value = data.luas_lahan
+            if (data.kepemilikan_tanah.length) data.kepemilikan_tanah.forEach(kep => {
+                var iframe = document.createElement('iframe')
+                iframe.src = kep.url
+                iframe.class = 'w-full border-1 border-black'
+                buktiContainer.appendChild(iframe)
+                document.getElementById('detail_poktan_modal').showModal()
+            });
+        } catch (err) {
+            console.error(err.message)
+        }
+    }
+    const showDetailKtp = (e) => {
+        const iframe = document.getElementById('detail_poktan_ktp')
+        iframe.style.display = iframe.style.display == 'block' ? 'none' : 'block'
+        e.innerHTML = e.innerHTML == 'Lihat KTP' ? 'Tutup KTP' : 'Lihat KTP'
+    }
+    const showBukti = (e) => {
+        const container = document.getElementById('detail_poktan_bukti')
+        container.style.display = container.style.display == 'flex' ? 'none' : 'flex'
+        e.innerHTML = e.innerHTML == 'Lihat Bukti Kepemilikan Lahan' ? 'Tutup Bukti Kepemilikan Lahan' : 'Lihat Bukti Kepemilikan Lahan'
+    }
+    const editDimanfaatkan = (data, route) => {
+        document.getElementById('edit_dimanfaatkan_kecamatan').value = data?.pompa_diterima?.pompa_usulan?.desa?.kecamatan?.name
+        document.getElementById('edit_dimanfaatkan_desa').value = data?.pompa_diterima?.pompa_usulan?.desa?.name
+        document.getElementById('edit_dimanfaatkan_poktan').value = data?.pompa_diterima?.pompa_usulan?.poktan?.name
+        document.getElementById('edit_dimanfaatkan_luas_lahan').value = data?.pompa_diterima?.pompa_usulan?.luas_lahan
+        document.getElementById('edit_dimanfaatkan_usulan_total_unit').value = data?.pompa_diterima?.pompa_usulan?.total_unit
+        document.getElementById('edit_dimanfaatkan_terima_total_unit').value = data?.pompa_diterima?.total_unit
+        document.getElementById('edit_dimanfaatkan_total_unit').max = data?.pompa_diterima?.total_unit
+        document.getElementById('edit_dimanfaatkan_total_unit').value = data?.total_unit
+        document.getElementById('edit_dimanfaatkan').action = route
+        document.getElementById('edit_dimanfaatkan_modal').showModal()
+    }
+    const verifikasi = (route) => {
+        document.getElementById('verifikasi_data').action = route
+        document.getElementById('verifikasi_data_modal').showModal()
+    }
+    const tolak = (route) => {
+        document.getElementById('tolak_data').action = route
+        document.getElementById('tolak_data_modal').showModal()
+    }
+
+    numbering()
+    showPercentage()
+</script>
+
 
 @endsection
