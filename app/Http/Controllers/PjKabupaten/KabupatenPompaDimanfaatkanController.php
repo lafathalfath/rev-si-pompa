@@ -17,7 +17,10 @@ class KabupatenPompaDimanfaatkanController extends Controller
         $user = Auth::user();
         $kecamatan = $user->region->kecamatan;
         $desa = Desa::whereIn('kecamatan_id', $kecamatan->pluck('id')->unique());
-        $pompa = Pompa::whereIn('desa_id', $desa->distinct()->pluck('id')->unique())->where('status_id', 3);
+        $pompa = Pompa::whereIn('desa_id', $desa->distinct()->pluck('id')->unique())->where(function ($q) {
+            $q->where('status_id', 3)
+            ->orWhere('status_id', 5);
+        });
         if ($request->src) $pompa = $pompa->where('id', Crypt::decryptString($request->src));
         if ($request->s) {
             if ($request->s == 'pending') $pompa = $pompa->where('dimanfaatkan_unit', 0);
@@ -42,6 +45,7 @@ class KabupatenPompaDimanfaatkanController extends Controller
         $pompa = Pompa::find(Crypt::decryptString($id));
         if (!$pompa) return back()->withErrors('data tidak ditemukan');
         if ($pompa->status_id == 4) return back()->withErrors('data sudah diverifikasi');
+        elseif ($pompa->status_id == 3) return back()->withErrors('data belum siap diverifikasi');
         elseif ($pompa->status_id == 2) return back()->withErrors('data sudah ditolak');
         elseif ($pompa->status_id == 1) return back()->withErrors('data belum pada tahap penerimaan');
         if ($pompa->dimanfaatkan_unit != $pompa->diterima_unit) return back()->withErrors('pompa diterima belum dimanfaatkan sepenuhnya');

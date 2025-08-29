@@ -44,6 +44,7 @@
         <thead>
             <tr>
                 <th>No</th>
+                <th>Terakhir<br>Diubah Oleh</th>
                 <th>Tanggal</th>
                 <th>Kecamatan</th>
                 <th>Desa</th>
@@ -58,6 +59,7 @@
                 <tr>
                     {{-- <td>{{ $loop->iteration }}</td> --}}
                     <td id="number_row"></td>
+                    <td>{{ $pom->updated_by ? str_replace('_', ' ', $pom->update_by->name.' ('.$pom->update_by->role->name.')') : '-' }}</td>
                     <td>{{ $pom->created_at }}</td>
                     <td id="kecamatan_entry">{{ $pom->desa->kecamatan->name }}</td>
                     <td id="desa_entry">{{ $pom->desa->name }}</td>

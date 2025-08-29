@@ -99,7 +99,6 @@ class DashboardController extends Controller
     }
 
     public function activate(Request $request) {
-        // dd($request->all());
         $request->validate([
             'name' => 'required|string|unique:users',
             'email' => 'required|email|unique:users',
@@ -117,7 +116,6 @@ class DashboardController extends Controller
             'password.min' => 'Password tidak valid',
             'password.confirmed' => 'Konfirmasi password salah'
         ]);
-        // dd($request->all());
         $user = Auth::user();
         $user = User::find($user->id);
         if ($user->nip == $request->name) return back()->withErrors('Username tidak boleh sama dengan NIP');

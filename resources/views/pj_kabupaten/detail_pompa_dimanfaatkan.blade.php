@@ -11,17 +11,17 @@
     <div class="text-xl font-bold"> Pengisian Data Pompa Dimanfaatkan </div>
     
     
-    @if ($pompa->dimanfaatkan_unit == $pompa->diterima_unit)
+    {{-- @if ($pompa->dimanfaatkan_unit == $pompa->diterima_unit) --}}
         @if ($pompa->status_id == 4)
             <div class="mt-2 mb-2 flex items-center justify-end gap-1 text-[#0a0] text-lg font-semibold">
                 <div class="w-6 h-6 border-3 border-[#0a0] rounded-full flex items-center justify-center text-center">&#10003;</div>Terverifikasi
             </div>
-        @else
+        @elseif ($pompa->status_id == 5)
             <div class="mt-2 mb-2 flex justify-end">
                 <div class="flex justify-end"><button onclick="verify_dimanfaatkan_modal.showModal()" class="btn rounded-sm text-white bg-[#0a0] hover:bg-[#090]">Verifikasi</button></div>
             </div>
         @endif
-    @endif
+    {{-- @endif --}}
 
     <div class="w-full flex justify-center mt-2 mb-5 border-1 border-gray-300 rounded-lg shadow-xl">
         <div class="w-2/3 px-5 py-2 flex flex-col gap-2">

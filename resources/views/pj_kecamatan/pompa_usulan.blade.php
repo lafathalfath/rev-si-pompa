@@ -35,12 +35,12 @@
         <thead>
             <tr>
                 <th>No</th>
+                <th>Terakhir<br>Diubah Oleh</th>
                 <th>Tanggal</th>
                 <th>Desa</th>
                 <th>Kelompok Tani</th>
                 <th>Luas Lahan (Ha)</th>
                 <th>Total Unit</th>
-                {{-- <th>Status</th> --}}
                 <th>Aksi</th>
             </tr>
         </thead>
@@ -48,6 +48,7 @@
             @forelse ($pompa as $pom)
                 <tr>
                     <td id="number_row"></td>
+                    <td>{{ $pom->updated_by ? str_replace('_', ' ', $pom->update_by.' ('.$pom->update_by_role.')') : '-' }}</td>
                     <td>{{ $pom->created_at }}</td>
                     <td>{{ $pom->desa }}</td>
                     <td class="flex items-center justify-between">

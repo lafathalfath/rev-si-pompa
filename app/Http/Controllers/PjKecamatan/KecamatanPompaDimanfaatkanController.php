@@ -4,8 +4,6 @@ namespace App\Http\Controllers\PjKecamatan;
 
 use App\Http\Controllers\Controller;
 use App\Models\Document;
-use App\Models\Notification;
-use App\Models\NotificationLink;
 use App\Models\PemanfaatanPompa;
 use App\Models\Pompa;
 use App\Models\User;
@@ -28,7 +26,10 @@ class KecamatanPompaDimanfaatkanController extends Controller
             elseif ($request->s == 'ongoing') $pompa = $pompa->whereColumn('dimanfaatkan_unit', '!=', 'diterima_unit');
             elseif ($request->s == 'completed') $pompa = $pompa->whereColumn('dimanfaatkan_unit', '=', 'diterima_unit');
         }
-        $pompa = $pompa->where('status_id', 3)
+        $pompa = $pompa->where(function ($q) {
+            $q->where('status_id', 3)
+            ->orWhere('status_id', 5);
+        })
             ->orderByDesc('created_at')
             ->get();
         return view('pj_kecamatan.pompa_dimanfaatkan', [
@@ -49,7 +50,6 @@ class KecamatanPompaDimanfaatkanController extends Controller
 
     public function store($id, Request $request) {
         $user = Auth::user();
-        $kecamatan = $user->region;
         $decrypted_id = Crypt::decryptString($id);
         $pompa = Pompa::find($decrypted_id);
         if (!$pompa) return back()->withErrors('data tidak ditemukan');
@@ -87,22 +87,6 @@ class KecamatanPompaDimanfaatkanController extends Controller
             'bukti_id' => $doc->id,
             'created_by' => $user->id
         ]);
-        // if ($pompa->dimanfaatkan_unit + $request->total_unit == $pompa->diterima_unit) {
-        //     $notification_data = [
-        //         'sender_id' => $user->id,
-        //         'receiver_id' => $kecamatan->kabupaten->pj_id,
-        //         'subject' => 'Data Baru',
-        //         'title' => 'Pemanfaatan Baru Pompa',
-        //         'message' => "Penanggung Jawab Kecamatan $kecamatan->name selesai menambahkan pemanfaatan pompa untuk kelompok tani ". $pompa->poktan->name ." di desa ".$pompa->desa->name."."
-        //     ];
-        //     $notification = Notification::create($notification_data);
-        //     $link = [
-        //         'notification_id' => $notification->id,
-        //         'name' => 'buka halaman detail pompa dimanfaatkan',
-        //         'url' => route('kabupaten.dimanfaatkan.detail', Crypt::encryptString($pompa->id))
-        //     ];
-        //     NotificationLink::create($link);
-        // }
         $update_data = [
             'dimanfaatkan_unit' => $pompa->dimanfaatkan_unit + $request->total_unit,
             'total_tanam' => $pompa->total_tanam + $request->luas_tanam,
@@ -114,7 +98,6 @@ class KecamatanPompaDimanfaatkanController extends Controller
 
     public function update($id, Request $request) {
         $user = Auth::user();
-        $kecamatan = $user->region;
         $pemanfaatan = PemanfaatanPompa::find(Crypt::decryptString($id));
         if (!$pemanfaatan) return back()->withErrors('data pompa dimanfaatkan tidak ditemukan');
         $pompa = $pemanfaatan->pompa;
@@ -154,36 +137,15 @@ class KecamatanPompaDimanfaatkanController extends Controller
             ]);
             $update_data['bukti_id'] = $doc->id;
         }
-        $prev_total_unit = $pemanfaatan->total_unit;
         $update = $pemanfaatan->update($update_data);
         if (!$update) return back()->withErrors('terjadi kesalahan');
         if ($prev_doc) $prev_doc->delete();
-        $update_to_complete = $pompa->dimanfaatkan_unit + $request->total_unit - $prev_total_unit == $pompa->diterima_unit;
-        // if ($pompa->dimanfaatkan_unit == $pompa->diterima_unit || $update_to_complete) {
-        //     $message_action = $update_to_complete ? 'selesai menambahkan' : 'mengubah';
-        //     $notification_data = [
-        //         'sender_id' => $user->id,
-        //         'receiver_id' => $kecamatan->kabupaten->pj_id,
-        //         'subject' => $update_to_complete ? 'Data Baru' : 'Data Diubah',
-        //         'title' => $update_to_complete ? 'Pemanfaatan Baru Pompa' : 'Perubahan Pemanfaatan Pompa',
-        //         'message' => "Penanggung Jawab Kecamatan $kecamatan->name ". $message_action." pemanfaatan pompa untuk kelompok tani ". $pompa->poktan->name ." di desa ".$pompa->desa->name."."
-        //     ];
-        //     $notification = Notification::create($notification_data);
-        //     $link = [
-        //         'notification_id' => $notification->id,
-        //         'name' => 'buka halaman detail pompa dimanfaatkan',
-        //         'url' => route('kabupaten.dimanfaatkan.detail', Crypt::encryptString($pompa->id))
-        //     ];
-        //     NotificationLink::create($link);
-        // }
         $update_pompa = $pompa->update($update_pompa_data);
         if (!$update_pompa) return back()->withErrors('terjadi kesalahan');
         return back()->with('success', 'data pompa dimanfaatkan berhasil diperbarui');
     }
     
     public function destroy($id) {
-        $user = Auth::user();
-        $kecamatan = $user->region;
         $pemanfaatan = PemanfaatanPompa::find(Crypt::decryptString($id));
         if (!$pemanfaatan) return back()->withErrors('data pompa dimanfaatkan tidak ditemukan');
         $pompa = $pemanfaatan->pompa;
@@ -191,22 +153,6 @@ class KecamatanPompaDimanfaatkanController extends Controller
             'dimanfaatkan_unit' => $pompa->dimanfaatkan_unit - $pemanfaatan->total_unit,
             'total_tanam' => $pompa->total_tanam - $pemanfaatan->luas_tanam
         ];
-        // if ($pompa->dimanfaatkan_unit == $pompa->diterima_unit) {
-        //     $notification_data = [
-        //         'sender_id' => $user->id,
-        //         'receiver_id' => $kecamatan->kabupaten->pj_id,
-        //         'subject' => 'Data Dihapus',
-        //         'title' => 'Pemanfaatan Pompa Dihapus',
-        //         'message' => "Penanggung Jawab Kecamatan $kecamatan->name menghapus pemanfaatan pompa untuk kelompok tani ". $pompa->poktan->name ." di desa ".$pompa->desa->name."."
-        //     ];
-        //     $notification = Notification::create($notification_data);
-        //     $link = [
-        //         'notification_id' => $notification->id,
-        //         'name' => 'buka halaman detail pompa dimanfaatkan',
-        //         'url' => route('kabupaten.dimanfaatkan.detail', Crypt::encryptString($pompa->id))
-        //     ];
-        //     NotificationLink::create($link);
-        // }
         $pompa->update($update_pompa_data);
         $bukti = $pemanfaatan->bukti;
         if ($bukti) {
@@ -217,5 +163,15 @@ class KecamatanPompaDimanfaatkanController extends Controller
             $bukti_ent->delete();
         }
         return back()->with('success', 'data pompa dimanfaatkan berhasil dihapus');
+    }
+
+    public function makeReadyVerify($id) {
+        $pompa = Pompa::find(Crypt::decryptString($id));
+        if (!$pompa) return back()->withErrors('data pompa tidak ditemukan');
+        if ($pompa->diterima_unit > $pompa->dimanfaatkan_unit) return back()->withErrors('pemanfaatan pompa belum selesai dilakukan');
+        $pompa->update([
+            'status_id' => 5
+        ]);
+        return back()->with('success', 'pemanfaatan pompa siap diverifikasi');
     }
 }

@@ -69,6 +69,7 @@
                         <div class="flex items-center justify-center gap-2">
                             <div>{{ $pom->dimanfaatkan_unit }}</div>
                             <div id="progress_percentage" class="radial-progress text-xs" style="--value:{{ $pompa_progress }};--size:2.2rem;--thickness:0.2rem;" aria-valuenow="{{ $pompa_progress }}" role="progressbar">{{ $pompa_progress }}%</div>
+                            @if ($pom->status_id == 5)<div class="text-xs bg-yellow-500 text-white font-semibold rounded-full text-center px-3">Menunggu<br>Verifikasi</div>@endif
                         </div>
                     </td>
                     <td><div class="flex items-center justify-center gap-2">

@@ -5,6 +5,7 @@
 @php
     $pompa_progress = round($pompa->dimanfaatkan_unit * 100 / $pompa->diterima_unit);
     $luas_tanam_progress = round($pompa->total_tanam * 100 / $pompa->luas_lahan);
+    $completed_data = $pompa_progress == 100 ? true : false;
 @endphp
 
 <div>
@@ -13,6 +14,10 @@
     @if ($pompa->dimanfaatkan_unit == $pompa->diterima_unit && $pompa->status_id == 4)
         <div class="mt-2 mb-2 flex items-center justify-end gap-1 text-[#0a0] text-lg font-semibold">
             <div class="w-6 h-6 border-3 border-[#0a0] rounded-full flex items-center justify-center text-center">&#10003;</div>Terverifikasi
+        </div>
+    @elseif ($pompa->status_id == 5)
+        <div class="mt-2 mb-2 flex items-center justify-end gap-1 text-[#fa0] text-lg font-semibold">
+            <div class="w-6 h-6 border-3 border-[#fa0] rounded-full flex items-center justify-center text-center">!</div>Menunggu Verifikasi
         </div>
     @endif
     <div class="w-full flex justify-center mt-2 mb-5 border-1 border-gray-300 rounded-lg shadow-xl">
@@ -59,7 +64,12 @@
             </div>
         </div>
     </div>
-    @if ($pompa->dimanfaatkan_unit < $pompa->diterima_unit)
+
+    @if ($completed_data && $pompa->status_id == 3)
+        <div class="mt-2 mb-2 flex justify-end">
+            <div class="flex justify-end"><button onclick="confirm_ready_verify_modal.showModal()" class="btn rounded-sm text-white bg-[#070] hover:bg-[#060]">Jadikan Siap Verifikasi</button></div>
+        </div>
+    @elseif ($pompa->status_id == 3)
         <div class="mt-2 mb-2 flex justify-end">
             <div class="flex justify-end"><button onclick="add_dimanfaatkan_modal.showModal()" class="btn rounded-sm text-white bg-[#070] hover:bg-[#060]">+ Tambah Data</button></div>
         </div>
@@ -198,6 +208,20 @@
         Apakah Anda yakin memperbarui data ini?
         <div class="modal-action">
             <button class="btn bg-[#070] hover:bg-[#060] text-white" onclick="edit_dimanfaatkan.submit()">Ya</button>
+            <form method="dialog"><button class="btn">Batal</button></form>
+        </div>
+    </div>
+    <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>
+
+<dialog id="confirm_ready_verify_modal" class="modal">
+    <div class="modal-box">
+        <form action="{{ route('kecamatan.dimanfaatkan.ready_verify', request()->id) }}" method="POST" id="ready_verify">@csrf @method('PUT')</form>
+        <h3 class="text-lg font-bold">Konfirmasi</h3>
+        Pastikan semua data yang Anda input benar! <br>
+        Apakah Anda yakin menjadikan data ini siap verifikasi?
+        <div class="modal-action">
+            <button class="btn bg-[#070] hover:bg-[#060] text-white" onclick="ready_verify.submit()">Ya</button>
             <form method="dialog"><button class="btn">Batal</button></form>
         </div>
     </div>

@@ -42,7 +42,6 @@ class AuthController extends Controller
         $token = $user->createToken($user->name);
         $token = str_replace($token->accessToken->id.'|', '', $token->plainTextToken);
         session(['api_token' => $token]);
-        // dd($attempt);
         // return back()->with('success', 'login berhasil')->withInput();
         return redirect()->route('dashboard')->with('success', 'login berhasil');
     }
