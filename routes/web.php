@@ -68,6 +68,7 @@ Route::middleware('auth')->group(function () {
                 Route::post('/{id}/store', [KecamatanPompaDimanfaatkanController::class, 'store'])->name('kecamatan.dimanfaatkan.store');
                 Route::put('/{id}/update', [KecamatanPompaDimanfaatkanController::class, 'update'])->name('kecamatan.dimanfaatkan.update');
                 Route::delete('/{id}/destroy', [KecamatanPompaDimanfaatkanController::class, 'destroy'])->name('kecamatan.dimanfaatkan.destroy');
+                Route::put('/{id}/ready-verify', [KecamatanPompaDimanfaatkanController::class, 'makeReadyVerify'])->name('kecamatan.dimanfaatkan.ready_verify');
             });
             Route::prefix('/history')->group(function () {
                 Route::get('/verified', [KecamatanPompaHistoryController::class, 'verified'])->name('kecamatan.history.verified');

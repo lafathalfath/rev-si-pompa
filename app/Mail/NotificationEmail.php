@@ -13,16 +13,16 @@ class NotificationEmail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $data;
+    public $payload;
     
-    public function __construct($data)
+    public function __construct($payload)
     {
-        $this->data = $data;
+        $this->payload = $payload;
     }
 
     public function build() {
-        // dd($this->data);
-        return $this->subject($this->data['subject'])->view('mails.notification_mail', $this->data);
+        return $this->subject($this->payload['subject'])
+                ->view('mails.notification_mail', ['data' => $this->payload]);
     }
 
 }

@@ -17,7 +17,8 @@ class StatusSeeder extends Seeder
             ['id' => 1, 'name' => 'usulan'],
             ['id' => 2, 'name' => 'ditolak'],
             ['id' => 3, 'name' => 'diterima'],
-            ['id' => 4, 'name' => 'diverifikasi']
+            ['id' => 4, 'name' => 'diverifikasi'],
+            ['id' => 5, 'name' => 'siap verifikasi']
         ];
 
         DB::table('status')->insert($statuses);

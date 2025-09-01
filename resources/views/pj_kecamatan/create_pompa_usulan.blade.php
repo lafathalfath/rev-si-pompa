@@ -41,7 +41,6 @@
         </div>
     </div>
     <div>
-        {{-- {{ dd($selected_poktan) }} --}}
         <div class="mt-2">
             <div class="w-full" id="select_poktan" style="{{ $selected_poktan ? 'display:none;' : '' }}">
                 <div class="text-lg font-semibold" id="title_poktan">Pilih Kelompok Tani</div>

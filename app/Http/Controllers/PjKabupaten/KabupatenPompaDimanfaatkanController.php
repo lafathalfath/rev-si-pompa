@@ -17,7 +17,10 @@ class KabupatenPompaDimanfaatkanController extends Controller
         $user = Auth::user();
         $kecamatan = $user->region->kecamatan;
         $desa = Desa::whereIn('kecamatan_id', $kecamatan->pluck('id')->unique());
-        $pompa = Pompa::whereIn('desa_id', $desa->distinct()->pluck('id')->unique())->where('status_id', 3);
+        $pompa = Pompa::whereIn('desa_id', $desa->distinct()->pluck('id')->unique())->where(function ($q) {
+            $q->where('status_id', 3)
+            ->orWhere('status_id', 5);
+        });
         if ($request->src) $pompa = $pompa->where('id', Crypt::decryptString($request->src));
         if ($request->s) {
             if ($request->s == 'pending') $pompa = $pompa->where('dimanfaatkan_unit', 0);
@@ -42,6 +45,7 @@ class KabupatenPompaDimanfaatkanController extends Controller
         $pompa = Pompa::find(Crypt::decryptString($id));
         if (!$pompa) return back()->withErrors('data tidak ditemukan');
         if ($pompa->status_id == 4) return back()->withErrors('data sudah diverifikasi');
+        elseif ($pompa->status_id == 3) return back()->withErrors('data belum siap diverifikasi');
         elseif ($pompa->status_id == 2) return back()->withErrors('data sudah ditolak');
         elseif ($pompa->status_id == 1) return back()->withErrors('data belum pada tahap penerimaan');
         if ($pompa->dimanfaatkan_unit != $pompa->diterima_unit) return back()->withErrors('pompa diterima belum dimanfaatkan sepenuhnya');
@@ -53,44 +57,5 @@ class KabupatenPompaDimanfaatkanController extends Controller
         $pompa->update($update_data);
         return back()->with('success', 'data berhasil diverifikasi');
     }
-
-    // public function update($id, Request $request) {
-    //     $user = Auth::user();
-    //     $dimanfaatkan = Pompa::find(Crypt::decryptString($id));
-    //     if (!$dimanfaatkan) return back()->withErrors('data pompa dimanfaatkan tidak ditemukan');
-    //     if ($dimanfaatkan->status == 'diverifikasi') return back()->withErrors('data yang telah diverifikasi tidak dapat diubah');
-    //     $request->validate([
-    //         'total_unit' => 'required|min:1'
-    //     ], [
-    //         'total_unit.required' => 'jumlah unit dimanfaatkan tidak boleh kosong',
-    //         'total_unit.min' => 'jumlah unit dimanfaatkan tidak boleh kurang dari 1'
-    //     ]);
-    //     if ($request->total_unit > $dimanfaatkan->pompa_diterima->total_unit) return back()->withErrors('jumlah unit dimanfaatkan tidak boleh lebih dari jumlah unit diusulkan');
-    //     if (!$dimanfaatkan->update([
-    //         'total_unit' => $request->total_unit,
-    //         'updated_by' => $user->id,
-    //         'status' => null
-    //     ])) return back()->withErrors('terjadi kesalahan');
-    //     return back()->with('success', 'data pompa dimanfaatkan berhasil diperbarui');
-    // }
-
-    // public function approve($id) {
-    //     $dimanfaatkan = Pompa::find(Crypt::decryptString($id));
-    //     if (!$dimanfaatkan) return back()->withErrors('data pompa dimanfaatkan tidak ditemukan');
-    //     if (!$dimanfaatkan->update([
-    //         'status' => 'diverifikasi',
-    //         'verified_at' => Date::now()
-    //     ])) return back()->withErrors('terjadi kesalahan');
-    //     return back()->with('success', 'data pompa dimanfaatkan berhasil diverifikasi');
-    // }
-
-    // public function deny($id) {
-    //     $dimanfaatkan = Pompa::find(Crypt::decryptString($id));
-    //     if (!$dimanfaatkan) return back()->withErrors('data pompa dimanfaatkan tidak ditemukan');
-    //     if (!$dimanfaatkan->update([
-    //         'status' => 'ditolak'
-    //     ])) return back()->withErrors('terjadi kesalahan');
-    //     return back()->with('success', 'data pompa dimanfaatkan berhasil ditolak');
-    // }
 
 }

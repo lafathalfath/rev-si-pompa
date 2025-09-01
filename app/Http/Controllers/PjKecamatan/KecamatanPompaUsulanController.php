@@ -26,8 +26,10 @@ class KecamatanPompaUsulanController extends Controller
             ->join('desa', 'desa.kecamatan_id', '=', 'kecamatan.id')
             ->join('pompa', 'pompa.desa_id', '=', 'desa.id')
             ->join('poktan', 'pompa.poktan_id', '=', 'poktan.id')
+            ->join('users', 'pompa.updated_by', '=', 'users.id')
+            ->join('role', 'users.role_id', '=', 'role.id')
             ->where('pompa.status_id', 1)
-            ->select('pompa.*', 'desa.name as desa', 'poktan.name as poktan', 'poktan.luas_lahan as poktan_luas_lahan')
+            ->select('pompa.*', 'desa.name as desa', 'poktan.name as poktan', 'poktan.luas_lahan as poktan_luas_lahan', 'users.name as update_by', 'role.name as update_by_role')
             ->orderByDesc('created_at')
             ->get();
         $desa = $user->region->desa;

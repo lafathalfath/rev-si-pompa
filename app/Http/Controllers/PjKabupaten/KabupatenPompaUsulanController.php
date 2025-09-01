@@ -99,7 +99,12 @@ class KabupatenPompaUsulanController extends Controller
         ];
         NotificationLink::create($link);
         $pj_kecamatan_email = $pompa->desa->kecamatan->pj->email;
-        Mail::to($pj_kecamatan_email)->send(new NotificationEmail([...$notification_data, 'links' => [$link]]));
+        // dd($pj_kecamatan_email);
+        Mail::to($pj_kecamatan_email)
+            ->send(new NotificationEmail([
+                ...$notification_data,
+                'links' => [$link]
+            ]));
         $update = $pompa->update([
             'status_id' => 2,
             'updated_by' => $user->id

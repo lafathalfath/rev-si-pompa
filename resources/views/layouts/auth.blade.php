@@ -14,13 +14,6 @@
     </style>
 </head>
 <body class="w-full h-[100vh] overflow-hidden flex items-center justify-center bg-gray-200">
-
-    {{-- <div>
-        {{ dd(session('success')) }}
-        @if (session('success'))
-            okeh
-        @endif
-    </div> --}}
     <div class="w-[400px] max-w-full p-1 max-h-full">
         <div class="alert-container">
             @if(session('success'))

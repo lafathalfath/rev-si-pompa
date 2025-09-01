@@ -29,7 +29,6 @@
 @php
     $user = auth()->user();
     $role = $user->role->name;
-    // dd(str_starts_with(request()->url(), route('kecamatan.usulan')));
 @endphp
 <body class="w-full h-[100vh] overflow-hidden bg-gray-100">
 
