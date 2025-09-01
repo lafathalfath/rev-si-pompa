@@ -58,43 +58,4 @@ class KabupatenPompaDimanfaatkanController extends Controller
         return back()->with('success', 'data berhasil diverifikasi');
     }
 
-    // public function update($id, Request $request) {
-    //     $user = Auth::user();
-    //     $dimanfaatkan = Pompa::find(Crypt::decryptString($id));
-    //     if (!$dimanfaatkan) return back()->withErrors('data pompa dimanfaatkan tidak ditemukan');
-    //     if ($dimanfaatkan->status == 'diverifikasi') return back()->withErrors('data yang telah diverifikasi tidak dapat diubah');
-    //     $request->validate([
-    //         'total_unit' => 'required|min:1'
-    //     ], [
-    //         'total_unit.required' => 'jumlah unit dimanfaatkan tidak boleh kosong',
-    //         'total_unit.min' => 'jumlah unit dimanfaatkan tidak boleh kurang dari 1'
-    //     ]);
-    //     if ($request->total_unit > $dimanfaatkan->pompa_diterima->total_unit) return back()->withErrors('jumlah unit dimanfaatkan tidak boleh lebih dari jumlah unit diusulkan');
-    //     if (!$dimanfaatkan->update([
-    //         'total_unit' => $request->total_unit,
-    //         'updated_by' => $user->id,
-    //         'status' => null
-    //     ])) return back()->withErrors('terjadi kesalahan');
-    //     return back()->with('success', 'data pompa dimanfaatkan berhasil diperbarui');
-    // }
-
-    // public function approve($id) {
-    //     $dimanfaatkan = Pompa::find(Crypt::decryptString($id));
-    //     if (!$dimanfaatkan) return back()->withErrors('data pompa dimanfaatkan tidak ditemukan');
-    //     if (!$dimanfaatkan->update([
-    //         'status' => 'diverifikasi',
-    //         'verified_at' => Date::now()
-    //     ])) return back()->withErrors('terjadi kesalahan');
-    //     return back()->with('success', 'data pompa dimanfaatkan berhasil diverifikasi');
-    // }
-
-    // public function deny($id) {
-    //     $dimanfaatkan = Pompa::find(Crypt::decryptString($id));
-    //     if (!$dimanfaatkan) return back()->withErrors('data pompa dimanfaatkan tidak ditemukan');
-    //     if (!$dimanfaatkan->update([
-    //         'status' => 'ditolak'
-    //     ])) return back()->withErrors('terjadi kesalahan');
-    //     return back()->with('success', 'data pompa dimanfaatkan berhasil ditolak');
-    // }
-
 }

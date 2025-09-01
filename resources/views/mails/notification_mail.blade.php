@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>{{ $subject }}</title>
+    <title>{{ $data['subject'] }}</title>
 </head>
 <body>
     
@@ -13,7 +13,11 @@
     <div>Tautan terkait:</div>
     <ul>
         @foreach ($data['links'] as $link)
-            <li><a href="{{ $link['url'] }}">{{ $link['name'] }}</a></li>
+            <li>
+                <a href="{{ $link['url'] }}">
+                    {{ $link['name'] }}
+                </a>
+            </li>
         @endforeach
     </ul>
 

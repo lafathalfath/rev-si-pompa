@@ -279,9 +279,12 @@
         if (unit == 0 || unit == '' || unit == null) {
             anyErrors = true
             errors.push('Jumlah pemanfaatan pompa tidak boleh kosong')
-        } else if (pompa.diterima_unit - pompa.dimanfaatkan_unit < unit) {
+        } else if (pompa.diterima_unit < unit) {
             anyErrors = true
             errors.push('Jumlah pemanfaatan pompa tidak boleh lebih dari pompa diterima')
+        } else if (pompa.diterima_unit - pompa.dimanfaatkan_unit < unit) {
+            anyErrors = true
+            errors.push('Jumlah pemanfaatan pompa tidak boleh lebih dari sisa pompa diterima yang belum dimanfaatkan')
         }
         if (luasTanam == 0 || luasTanam == '' || luasTanam == null) {
             anyErrors = true
@@ -312,7 +315,7 @@
             errors.push('Jumlah pemanfaatan pompa tidak boleh kosong')
         } else if (parseInt(unit.value) > parseInt(unit.max)) {
             anyErrors = true
-            errors.push('Jumlah pemanfaatan pompa tidak boleh lebih dari pompa diterima')
+            errors.push('Jumlah pemanfaatan pompa tidak boleh lebih dari sisa pompa diterima yang belum dimanfaatkan')
         }
         if (luasLahan.value == 0 || luasLahan.value == '' || luasLahan.value == null) {
             anyErrors = true
