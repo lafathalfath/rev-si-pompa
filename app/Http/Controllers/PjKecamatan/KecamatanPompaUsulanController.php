@@ -76,6 +76,7 @@ class KecamatanPompaUsulanController extends Controller
             'luas_lahan' => $request->luas_lahan,
             'diusulkan_unit' => $request->diusulkan_unit,
             'created_by' => $user->id,
+            'updated_by' => $user->id,
         ];
         $pompa = Pompa::create($data);
         $desa = Desa::find($request->desa_id);
